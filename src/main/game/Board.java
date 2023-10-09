@@ -7,10 +7,6 @@ import chess.ChessPosition;
 public class Board implements chess.ChessBoard {
     private ChessPiece board[][] = new ChessPiece[8][8];
 
-    public Board() {
-        resetBoard();
-    }
-
     @Override
     public void addPiece(ChessPosition position, ChessPiece piece) {
         board[position.getRow() - 1][position.getColumn() - 1] = piece; //FIXME check if rows need to be flipped

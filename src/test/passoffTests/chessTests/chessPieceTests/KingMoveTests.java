@@ -56,6 +56,7 @@ public class KingMoveTests {
 
 
         Set<ChessMove> pieceMoves = new HashSet<>(king.pieceMoves(board, position));
+
         Assertions.assertEquals(validMoves, pieceMoves,
                 "ChessPiece pieceMoves did not return the correct moves");
     }
