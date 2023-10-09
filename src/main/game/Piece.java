@@ -118,7 +118,6 @@ public class Piece implements chess.ChessPiece {
                         moves.add(new Move(myPosition, endPosition));
                     }
                 }
-                //FIXME add for castling
             }
             case PAWN -> {
                 if (teamColor == ChessGame.TeamColor.WHITE) {
@@ -165,6 +164,32 @@ public class Piece implements chess.ChessPiece {
                             else moves.add(new Move(myPosition, endPosition));
                         }
                     }
+                    if (row == 5) {
+                        if (column > 1) {
+                            Piece leftPiece = (Piece) board.getPiece(new Position(row, column - 1));
+                            if (leftPiece != null && leftPiece.getTeamColor() != teamColor
+                                    && leftPiece.getPieceType() == PieceType.PAWN
+                                    && leftPiece.getLastMove() != null
+                                    && leftPiece.getLastMove().getEndPosition().getRow()
+                                    == leftPiece.getLastMove().getStartPosition().getRow() - 2
+                                    && board.getPiece(new Position(row + 1, column - 1)) == null) {
+                                endPosition = new Position(row + 1, column - 1);
+                                moves.add(new Move(myPosition, endPosition));
+                            }
+                        }
+                        if (column < 8) {
+                            Piece rightPiece = (Piece) board.getPiece(new Position(row, column + 1));
+                            if (rightPiece != null && rightPiece.getTeamColor() != teamColor
+                                    && rightPiece.getPieceType() == PieceType.PAWN
+                                    && rightPiece.getLastMove() != null
+                                    && rightPiece.getLastMove().getEndPosition().getRow()
+                                    == rightPiece.getLastMove().getStartPosition().getRow() - 2
+                                    && board.getPiece(new Position(row + 1, column + 1)) == null) {
+                                endPosition = new Position(row + 1, column + 1);
+                                moves.add(new Move(myPosition, endPosition));
+                            }
+                        }
+                    }
                     //FIXME add en passant
                 }
                 else if (teamColor == ChessGame.TeamColor.BLACK) {
@@ -209,6 +234,32 @@ public class Piece implements chess.ChessPiece {
                                 moves.add(new Move(myPosition, endPosition, PieceType.ROOK));
                             }
                             else moves.add(new Move(myPosition, endPosition));
+                        }
+                    }
+                    if (row == 4) {
+                        if (column > 1) {
+                            Piece leftPiece = (Piece) board.getPiece(new Position(row, column - 1));
+                            if (leftPiece != null && leftPiece.getTeamColor() != teamColor
+                                    && leftPiece.getPieceType() == PieceType.PAWN
+                                    && leftPiece.getLastMove() != null
+                                    && leftPiece.getLastMove().getEndPosition().getRow()
+                                    == leftPiece.getLastMove().getStartPosition().getRow() + 2
+                                    && board.getPiece(new Position(row - 1, column - 1)) == null) {
+                                endPosition = new Position(row - 1, column - 1);
+                                moves.add(new Move(myPosition, endPosition));
+                            }
+                        }
+                        if (column < 8) {
+                            Piece rightPiece = (Piece) board.getPiece(new Position(row, column + 1));
+                            if (rightPiece != null && rightPiece.getTeamColor() != teamColor
+                                    && rightPiece.getPieceType() == PieceType.PAWN
+                                    && rightPiece.getLastMove() != null
+                                    && rightPiece.getLastMove().getEndPosition().getRow()
+                                    == rightPiece.getLastMove().getStartPosition().getRow() + 2
+                                    && board.getPiece(new Position(row - 1, column + 1)) == null) {
+                                endPosition = new Position(row - 1, column + 1);
+                                moves.add(new Move(myPosition, endPosition));
+                            }
                         }
                     }
                     //FIXME add en passant
