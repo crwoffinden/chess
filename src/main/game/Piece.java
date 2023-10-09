@@ -9,18 +9,18 @@ public class Piece implements chess.ChessPiece {
     private ChessGame.TeamColor teamColor;
     private PieceType pieceType;
 
-    //private ChessMove lastMove = null;
+    private ChessMove lastMove = null;
 
     public Piece(ChessGame.TeamColor color, PieceType piece) {
         teamColor = color;
         pieceType = piece;
     }
 
-    /*public Piece(ChessGame.TeamColor color, PieceType piece, ChessMove lastMove) {
+    public Piece(ChessGame.TeamColor color, PieceType piece, ChessMove lastMove) {
         teamColor = color;
         pieceType = piece;
         this.lastMove = lastMove;
-    }*/
+    }
     @Override
     public ChessGame.TeamColor getTeamColor() {
         return teamColor;
@@ -31,9 +31,9 @@ public class Piece implements chess.ChessPiece {
         return pieceType;
     }
 
-    /*public ChessMove getLastMove() {
+    public ChessMove getLastMove() {
         return lastMove;
-    }*/
+    }
 
     @Override
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
@@ -99,16 +99,25 @@ public class Piece implements chess.ChessPiece {
                         moves.add(new Move(myPosition, endPosition));
                     }
                 }
-                /*if (lastMove == null) {
-                    Piece leftCorner = (Piece) board.getPiece(new Position(myPosition.getRow(), 1));
+                if (lastMove == null) {
+                    Piece leftCorner = (Piece) board.getPiece(new Position(row, 1));
                     if (leftCorner != null && leftCorner.getTeamColor() == teamColor
                             && leftCorner.getPieceType() == PieceType.ROOK
-                            && leftCorner.getLastMove() == null
-                            && board.getPiece(new Position(myPosition.getRow(), 2)) == null
-                            && board.getPiece(new Position(myPosition.getRow(), 3)) == null
-                            && board.getPiece(new Position(myPosition.getRow(), 4)) == null) {
+                            && leftCorner.getLastMove() == null && board.getPiece(new Position(row, 2)) == null
+                            && board.getPiece(new Position(row, 3)) == null
+                            && board.getPiece(new Position(row, 4)) == null) {
+                        endPosition = new Position(row, column - 2);
+                        moves.add(new Move(myPosition, endPosition));
                     }
-                }*/
+                    Piece rightCorner = (Piece) board.getPiece(new Position(row, 8));
+                    if (rightCorner != null && rightCorner.getTeamColor() == teamColor
+                            && rightCorner.getPieceType() == PieceType.ROOK
+                            && rightCorner.getLastMove() == null && board.getPiece(new Position(row, 7)) == null
+                            && board.getPiece(new Position(row, 6)) == null) {
+                        endPosition = new Position(row, column + 2);
+                        moves.add(new Move(myPosition, endPosition));
+                    }
+                }
                 //FIXME add for castling
             }
             case PAWN -> {
@@ -125,7 +134,10 @@ public class Piece implements chess.ChessPiece {
                     }
                     if (row == 2) {
                         endPosition = new Position(row + 2, column);
-                        if (board.getPiece(endPosition) == null) moves.add(new Move(myPosition, endPosition));
+                        if (board.getPiece(endPosition) == null
+                                && board.getPiece(new Position(row + 1, column)) == null) {
+                            moves.add(new Move(myPosition, endPosition));
+                        }
                     }
                     if (column > 1) {
                         endPosition = new Position(row + 1, column - 1);
@@ -168,7 +180,10 @@ public class Piece implements chess.ChessPiece {
                     }
                     if (row == 7) {
                         endPosition = new Position(row - 2, column);
-                        if (board.getPiece(endPosition) == null) moves.add(new Move(myPosition, endPosition));
+                        if (board.getPiece(endPosition) == null
+                                && board.getPiece(new Position(row - 1, column)) == null) {
+                            moves.add(new Move(myPosition, endPosition));
+                        }
                     }
                     if (column > 1) {
                         endPosition = new Position(row - 1, column - 1);

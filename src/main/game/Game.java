@@ -28,7 +28,7 @@ public class Game implements chess.ChessGame {
             ChessPiece temp = board.getPiece(move.getEndPosition());
             ChessPiece oldPiece = piece;
             if (move.getPromotionPiece() != null) {
-                piece = new Piece(oldPiece.getTeamColor(), move.getPromotionPiece()/*, move*/);
+                piece = new Piece(oldPiece.getTeamColor(), move.getPromotionPiece(), move);
             }
             board.addPiece(move.getEndPosition(), piece);
             board.addPiece(move.getStartPosition(), null);
@@ -58,10 +58,24 @@ public class Game implements chess.ChessGame {
         ChessPiece temp = board.getPiece(move.getEndPosition());
         ChessPiece oldPiece = piece;
         if (move.getPromotionPiece() != null) {
-            piece = new Piece(oldPiece.getTeamColor(), move.getPromotionPiece()/*, move*/);
+            piece = new Piece(oldPiece.getTeamColor(), move.getPromotionPiece(), move);
         }
         board.addPiece(move.getEndPosition(), piece);
         board.addPiece(move.getStartPosition(), null);
+        if (oldPiece.getPieceType() == ChessPiece.PieceType.KING) {
+            if (move.getEndPosition().getColumn() == move.getStartPosition().getColumn() - 2) {
+                ChessPiece rook = board.getPiece(new Position(move.getStartPosition().getRow(), 1));
+                board.addPiece(new Position(move.getStartPosition().getRow(),
+                        move.getStartPosition().getColumn() - 1), rook);
+                board.addPiece(new Position(move.getStartPosition().getRow(), 1), null);
+            }
+            else if (move.getEndPosition().getColumn() == move.getStartPosition().getColumn() + 2) {
+                ChessPiece rook = board.getPiece(new Position(move.getStartPosition().getRow(), 8));
+                board.addPiece(new Position(move.getStartPosition().getRow(),
+                        move.getStartPosition().getColumn() + 1), rook);
+                board.addPiece(new Position(move.getStartPosition().getRow(), 8), null);
+            }
+        }
         if (isInCheck(turn)) {
             board.addPiece(move.getStartPosition(), oldPiece);
             board.addPiece(move.getEndPosition(), temp);
