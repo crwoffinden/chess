@@ -1,5 +1,6 @@
 package dataAccess.DAO;
 
+import dataAccess.DataAccessException;
 import dataAccess.model.Game;
 
 import java.util.HashMap;
@@ -12,8 +13,9 @@ public class GameDAO {
     /**Adds game to the map
      *
      * @param game
+     * @throws DataAccessException
      */
-    public void insert(Game game) {
+    public void insert(Game game) throws DataAccessException {
 
     }
 
@@ -21,23 +23,26 @@ public class GameDAO {
      *
      * @param gameID
      * @return
+     * @throws DataAccessException
      */
-    public Game find(int gameID){
+    public Game find(int gameID) throws  DataAccessException {
         return null;
     }
 
     /**Deletes a game from the table
      *
      * @param game
+     * @throws DataAccessException
      */
-    public void remove(Game game) {
+    public void remove(Game game) throws DataAccessException {
 
     }
 
     /**Clears the game map
      *
+     * @throws DataAccessException
      */
-    public void clear(){
+    public void clear() throws DataAccessException {
 
     }
 }
