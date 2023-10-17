@@ -44,8 +44,6 @@ public class Move implements chess.ChessMove {
         if (!((Move)obj).end.equals(this.end)) return false;
         if (!(((Move)obj).type == this.type)) return false;
         return true;
-        /*return (((Move)obj).start.equals(this.start) && ((Move)obj).end.equals(this.end)
-                && ((Move)obj).type.equals(this.type));*/
     }
 
     @Override
