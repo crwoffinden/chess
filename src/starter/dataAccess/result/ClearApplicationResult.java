@@ -1,5 +1,6 @@
 package dataAccess.result;
 
+/**The result of an attempt to clear the application of all data*/
 public class ClearApplicationResult {
     /**The message passed after a clear request*/
     private String message;

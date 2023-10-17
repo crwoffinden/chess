@@ -1,5 +1,6 @@
 package dataAccess.result;
 
+/**The result of a create game request*/
 public class CreateGameResult {
     /**The game ID of the new game*/
     private int gameID;

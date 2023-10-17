@@ -1,5 +1,6 @@
 package dataAccess.result;
 
+/**The result of a request to join a game*/
 public class JoinGameResult {
     /**Error message if an error occurs*/
     private String message;

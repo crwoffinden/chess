@@ -1,5 +1,6 @@
 package dataAccess.result;
 
+/**The result of an attempt to log a user out*/
 public class LogoutResult {
     /**Error message if an error occurs*/
     private String message;

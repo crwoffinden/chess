@@ -6,6 +6,7 @@ import dataAccess.model.AuthToken;
 import java.util.HashMap;
 import java.util.Map;
 
+/**Accesses and updates the authtoken table*/
 public class AuthTokenDAO {
     /**Map that will store the authtokens*/
     private Map<String, AuthToken> authtokens = new HashMap<>();

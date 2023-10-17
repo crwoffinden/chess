@@ -2,6 +2,7 @@ package dataAccess.request;
 
 import chess.ChessGame;
 
+/**Request to join a game*/
 public class JoinGameRequest {
     /**The specified player color*/
     private ChessGame.TeamColor playerColor;

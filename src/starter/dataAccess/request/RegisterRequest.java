@@ -1,5 +1,6 @@
 package dataAccess.request;
 
+/**Request to register a new user*/
 public class RegisterRequest {
     /**The username of the new user*/
     private String username;

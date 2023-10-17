@@ -1,5 +1,6 @@
 package dataAccess.model;
 
+/**Represents a user object*/
 public class User {
     /**The user's username*/
     private String username;

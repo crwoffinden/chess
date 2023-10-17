@@ -4,6 +4,7 @@ import dataAccess.model.Game;
 
 import java.util.Map;
 
+/**The result of an attempt to list all of the games*/
 public class ListGamesResult {
     /**The list of games*/
     private Map<Integer, Game> games;

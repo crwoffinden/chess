@@ -1,5 +1,6 @@
 package dataAccess.model;
 
+/**Represents an authtoken object*/
 public class AuthToken {
     /**The actual authtoken*/
     private String authToken;

@@ -1,5 +1,6 @@
 package dataAccess.request;
 
+/**Request to log a user in*/
 public class LoginRequest {
     /**The given username*/
     private String username;

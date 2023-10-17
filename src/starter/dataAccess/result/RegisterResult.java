@@ -1,5 +1,6 @@
 package dataAccess.result;
 
+/**The result of a request to register a new user*/
 public class RegisterResult {
     /**Username of the new user*/
     private String username;

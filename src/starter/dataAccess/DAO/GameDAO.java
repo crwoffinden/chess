@@ -6,6 +6,7 @@ import dataAccess.model.Game;
 import java.util.HashMap;
 import java.util.Map;
 
+/**Accesses and updates the game table*/
 public class GameDAO {
     /**Map that will store the games*/
     private Map<Integer, Game> games = new HashMap<>();

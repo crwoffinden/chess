@@ -6,6 +6,7 @@ import dataAccess.model.User;
 import java.util.HashMap;
 import java.util.Map;
 
+/**Accesses and updates the user table*/
 public class UserDAO {
     /**Map that will store the users*/
     private Map<String, User> users = new HashMap<>();

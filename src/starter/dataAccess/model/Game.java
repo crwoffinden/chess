@@ -1,5 +1,6 @@
 package dataAccess.model;
 
+/**Represents a game object*/
 public class Game {
     /**The gameID*/
     private int gameID;

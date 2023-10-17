@@ -1,5 +1,6 @@
 package dataAccess.result;
 
+/**The result of a login request*/
 public class LoginResult {
     /**Username of the user*/
     private String username;

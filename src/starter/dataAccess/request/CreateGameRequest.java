@@ -1,5 +1,6 @@
 package dataAccess.request;
 
+/**Request to create a new game*/
 public class CreateGameRequest {
     /**The name of the new game*/
     private String gameName;
