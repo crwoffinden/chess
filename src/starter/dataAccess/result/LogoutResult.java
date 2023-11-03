@@ -33,4 +33,9 @@ public class LogoutResult {
     public boolean isSuccess() {
         return success;
     }
+
+    //Determines if an error was the client's fault or the server's
+    public boolean serverError() {
+        return (message.equals("Error: Internal Server Error"));
+    }
 }

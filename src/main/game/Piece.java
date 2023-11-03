@@ -529,4 +529,11 @@ public class Piece implements chess.ChessPiece {
         }
         return moves;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj.getClass() != this.getClass()) return false;
+        return ((((Piece)obj).teamColor == this.teamColor) && (((Piece)obj).pieceType == this.pieceType)
+                && (((Piece)obj).lastMove).equals(this.lastMove));
+    }
 }

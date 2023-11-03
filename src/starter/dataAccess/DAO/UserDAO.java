@@ -17,7 +17,12 @@ public class UserDAO {
      * @throws DataAccessException
      */
     public void insert(User user) throws DataAccessException {
-
+        try {
+            User otherUser = users.get(user.getUsername());
+            if (otherUser != null) throw new DataAccessException("Already a user with that username");
+        } finally {
+            users.put(user.getUsername(), user);
+        }
     }
 
     /**Finds a user by username
@@ -27,7 +32,9 @@ public class UserDAO {
      * @throws DataAccessException
      */
     public User find(String username) throws DataAccessException {
-        return null;
+        User foundUser = users.get(username);
+        if (foundUser == null) throw new DataAccessException("No user with that username.");
+        return foundUser;
     }
 
     /**Deletes a user from the table
@@ -36,7 +43,8 @@ public class UserDAO {
      * @throws DataAccessException
      */
     public void remove(User user) throws DataAccessException {
-
+        boolean deleted = users.remove(user.getUsername(), user);
+        if (!deleted) throw new DataAccessException("User not found.");
     }
 
     /**Clears the user map
@@ -44,6 +52,6 @@ public class UserDAO {
      * @throws DataAccessException
      */
     public void clear() throws DataAccessException {
-
+        users.clear();
     }
 }

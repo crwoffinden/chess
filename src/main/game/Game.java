@@ -239,4 +239,11 @@ public class Game implements chess.ChessGame {
     public ChessBoard getBoard() {
         return board;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj.getClass() != this.getClass()) return false;
+        return ((((Game)obj).turn == this.turn) && (((Game)obj).board.equals(this.board))
+                && (((Game)obj).lastMove == this.lastMove));
+    }
 }

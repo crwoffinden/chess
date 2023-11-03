@@ -3,7 +3,7 @@ package dataAccess.result;
 /**The result of a create game request*/
 public class CreateGameResult {
     /**The game ID of the new game*/
-    private int gameID;
+    private Integer gameID;
 
     /**The error message if an error occurs*/
     private String message;
@@ -17,7 +17,7 @@ public class CreateGameResult {
      * @param message
      * @param success
      */
-    public CreateGameResult(int gameID, String message, boolean success) {
+    public CreateGameResult(Integer gameID, String message, boolean success) {
         this.gameID = gameID;
         this.message = message;
         this.success = success;
@@ -42,5 +42,10 @@ public class CreateGameResult {
      */
     public boolean isSuccess() {
         return success;
+    }
+
+    //Determines if an error was the client's fault or the server's
+    public boolean serverError() {
+        return (message.equals("Error: Internal Server Error"));
     }
 }

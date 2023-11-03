@@ -1,5 +1,9 @@
 package dataAccess.model;
 
+import dataAccess.AlreadyTakenException;
+
+import java.util.Objects;
+
 /**Represents a game object*/
 public class Game {
     /**The gameID*/
@@ -49,14 +53,26 @@ public class Game {
      *
      * @return
      */
+
+    public void setWhiteUsername(String username) throws AlreadyTakenException {
+        if (whiteUsername != null) throw new AlreadyTakenException("Error: already taken");
+        whiteUsername = username;
+    }
     public String getBlackUsername(){
         return blackUsername;
+    }
+
+    public void setBlackUsername(String username) throws AlreadyTakenException {
+        if (blackUsername != null) throw new AlreadyTakenException("Error: already taken");
+        blackUsername = username;
     }
 
     /**Returns the game name
      *
      * @return
      */
+
+
     public String getGameName() {
         return gameName;
     }
@@ -67,5 +83,13 @@ public class Game {
      */
     public chess.ChessGame getGame() {
         return game;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj.getClass() != this.getClass()) return false;
+        return ((((Game)obj).gameID == this.gameID) && (((Game)obj).whiteUsername == this.whiteUsername)
+                && (((Game)obj).blackUsername == this.blackUsername) && (((Game)obj).gameName == this.gameName)
+                && (((Game)obj).game.equals(this.game)));
     }
 }

@@ -4,6 +4,8 @@ import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPosition;
 
+import javax.security.auth.login.CredentialNotFoundException;
+
 public class Board implements chess.ChessBoard {
     private ChessPiece board[][] = new ChessPiece[8][8];
 
@@ -46,5 +48,19 @@ public class Board implements chess.ChessBoard {
         board[7][5] = new Piece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP);
         board[7][6] = new Piece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT);
         board[7][7] = new Piece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj.getClass() != this.getClass()) return false;
+        for (int i = 0; i < board.length; ++i) {
+            for (int j = 0; j < board[i].length; ++j) {
+                if (this.board[i][j] == null) {
+                    if (((Board)obj).board[i][j] != null) return false;
+                }
+                else if (!(((Board)obj).board[i][j].equals(this.board[i][j]))) return false;
+            }
+        }
+        return true;
     }
 }

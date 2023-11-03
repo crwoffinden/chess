@@ -6,7 +6,7 @@ public class RegisterResult {
     private String username;
 
     /**Generated authtoken*/
-    private String authtoken;
+    private String authToken;
 
     /**Error message if an error occurs*/
     private String message;
@@ -17,13 +17,13 @@ public class RegisterResult {
     /**Constructor
      *
      * @param username
-     * @param authtoken
+     * @param authToken
      * @param message
      * @param success
      */
-    public RegisterResult(String username, String authtoken, String message, boolean success) {
+    public RegisterResult(String username, String authToken, String message, boolean success) {
         this.username = username;
-        this.authtoken = authtoken;
+        this.authToken = authToken;
         this.message = message;
         this.success = success;
     }
@@ -40,8 +40,8 @@ public class RegisterResult {
      *
      * @return
      */
-    public String getAuthtoken() {
-        return authtoken;
+    public String getAuthToken() {
+        return authToken;
     }
 
     /**Gets the error message
@@ -58,5 +58,10 @@ public class RegisterResult {
      */
     public boolean isSuccess() {
         return success;
+    }
+
+    //Determines if an error was the client's fault or the server's
+    public boolean serverError() {
+        return (message.equals("Error: Internal Server Error"));
     }
 }

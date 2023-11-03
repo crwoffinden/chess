@@ -44,4 +44,11 @@ public class User {
     public String getEmail() {
         return email;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj.getClass() != this.getClass()) return false;
+        return ((((User)obj).username == this.username)
+                && (((User)obj).password == this.password) && (((User)obj).email == this.email));
+    }
 }

@@ -2,6 +2,7 @@ package dataAccess.DAO;
 
 import dataAccess.DataAccessException;
 import dataAccess.model.AuthToken;
+import dataAccess.model.User;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +18,12 @@ public class AuthTokenDAO {
      * @throws DataAccessException
      */
     public void insert(AuthToken authtoken) throws DataAccessException {
-
+        try {
+            AuthToken otherAuthtoken = authtokens.get(authtoken.getAuthToken());
+            if (otherAuthtoken != null) throw new DataAccessException("Authtoken already exists.");
+        } finally {
+            authtokens.put(authtoken.getAuthToken(), authtoken);
+        }
     }
 
     /**Finds an authtoken by the authtoken string
@@ -27,7 +33,9 @@ public class AuthTokenDAO {
      * @throws DataAccessException
      */
     public AuthToken find(String authtoken) throws DataAccessException {
-        return null;
+        AuthToken foundAuthtoken = authtokens.get(authtoken);
+        if (foundAuthtoken == null) throw new DataAccessException("Authtoken not found.");
+        return foundAuthtoken;
     }
 
     /**Deletes an authtoken from the table
@@ -36,7 +44,8 @@ public class AuthTokenDAO {
      * @throws DataAccessException
      */
     public void remove(AuthToken authtoken) throws DataAccessException {
-
+        boolean deleted = authtokens.remove(authtoken.getAuthToken(), authtoken);
+        if (!deleted) throw new DataAccessException("Authtoken not found.");
     }
 
     /**Clears the authtoken map
@@ -44,6 +53,6 @@ public class AuthTokenDAO {
      * @throws DataAccessException
      */
     public void clear() throws DataAccessException {
-
+        authtokens.clear();
     }
 }

@@ -32,4 +32,10 @@ public class AuthToken {
     public String getUsername() {
         return username;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj.getClass() != this.getClass()) return false;
+        return ((((AuthToken)obj).authToken == this.authToken) && (((AuthToken)obj).username == this.username));
+    }
 }

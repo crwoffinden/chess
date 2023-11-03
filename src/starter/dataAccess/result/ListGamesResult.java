@@ -2,12 +2,13 @@ package dataAccess.result;
 
 import dataAccess.model.Game;
 
+import java.util.List;
 import java.util.Map;
 
 /**The result of an attempt to list all of the games*/
 public class ListGamesResult {
     /**The list of games*/
-    private Map<Integer, Game> games;
+    private Game[] games;
 
     /**Error message if error occurs*/
     private String message;
@@ -21,7 +22,7 @@ public class ListGamesResult {
      * @param message
      * @param success
      */
-    public ListGamesResult(Map<Integer, Game> games, String message, boolean success) {
+    public ListGamesResult(Game[] games, String message, boolean success) {
         this.games = games;
         this.message = message;
         this.success = success;
@@ -31,7 +32,7 @@ public class ListGamesResult {
      *
      * @return
      */
-    public Map<Integer, Game> getGames() {
+    public Game[] getGames() {
         return games;
     }
 
@@ -49,5 +50,10 @@ public class ListGamesResult {
      */
     public boolean isSuccess() {
         return success;
+    }
+
+    //Determines if an error was the client's fault or the server's
+    public boolean serverError() {
+        return (message.equals("Error: Internal Server Error"));
     }
 }

@@ -1,6 +1,7 @@
 package dataAccess.request;
 
 import chess.ChessGame;
+import dataAccess.model.User;
 
 /**Request to join a game*/
 public class JoinGameRequest {
@@ -9,6 +10,9 @@ public class JoinGameRequest {
 
     /**The game ID of the game being joined*/
     private int gameID;
+
+    //FIXME used in memory implementation, may need to remove when adding actual database
+    private String username;
 
     /**Constructor
      *
