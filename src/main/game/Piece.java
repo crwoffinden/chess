@@ -533,7 +533,13 @@ public class Piece implements chess.ChessPiece {
     @Override
     public boolean equals(Object obj) {
         if (obj.getClass() != this.getClass()) return false;
-        return ((((Piece)obj).teamColor == this.teamColor) && (((Piece)obj).pieceType == this.pieceType)
-                && (((Piece)obj).lastMove).equals(this.lastMove));
+        if (((Piece)obj).lastMove == null) {
+            if (this.lastMove != null) return false;
+        }
+        else {
+            if (this.lastMove == null) return false;
+            if (!(((Piece)obj).lastMove.equals(this.lastMove))) return false;
+        }
+        return ((((Piece)obj).teamColor == this.teamColor) && (((Piece)obj).pieceType == this.pieceType));
     }
 }

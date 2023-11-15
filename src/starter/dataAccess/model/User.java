@@ -48,7 +48,7 @@ public class User {
     @Override
     public boolean equals(Object obj) {
         if (obj.getClass() != this.getClass()) return false;
-        return ((((User)obj).username == this.username)
-                && (((User)obj).password == this.password) && (((User)obj).email == this.email));
+        return ((((User)obj).username.equals(this.username))
+                && (((User)obj).password.equals(this.password)) && (((User)obj).email.equals(this.email)));
     }
 }

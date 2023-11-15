@@ -3,7 +3,7 @@ package dataAccess.webAPI;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import dataAccess.DAO.Database;
+import dataAccess.DAO.MemoryDatabase;
 import dataAccess.request.RegisterRequest;
 import dataAccess.result.RegisterResult;
 import dataAccess.service.RegisterService;
@@ -13,11 +13,6 @@ import java.net.HttpURLConnection;
 
 public class RegisterHandler implements HttpHandler {
     //FIXME memory implementation adjust when adding actual database
-    private Database db;
-
-    public RegisterHandler(Database db) {
-        this.db = db;
-    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -41,7 +36,7 @@ public class RegisterHandler implements HttpHandler {
                 RegisterRequest request = (RegisterRequest) gson.fromJson(reqData, RegisterRequest.class);
 
                 RegisterService service = new RegisterService();
-                RegisterResult result = service.register(request, db);
+                RegisterResult result = service.register(request);
                 success = result.isSuccess();
 
                 //Everything worked, we send an OK response header

@@ -5,7 +5,7 @@ import java.net.*;
 
 import com.sun.net.httpserver.*;
 import dataAccess.DAO.AuthTokenDAO;
-import dataAccess.DAO.Database;
+import dataAccess.DAO.MemoryDatabase;
 import dataAccess.DAO.GameDAO;
 import dataAccess.DAO.UserDAO;
 import dataAccess.webAPI.*;
@@ -69,9 +69,6 @@ public class Server {
         // This line is necessary, but its function is unimportant for our purposes.
         server.setExecutor(null);
 
-        //FIXME this is for memory implementation adjust when adding the actual database
-        Database db = new Database(new UserDAO(), new GameDAO(), new AuthTokenDAO());
-
         // Log message indicating that the server is creating and installing
         // its HTTP handlers.
         // The HttpServer class listens for incoming HTTP requests.  When one
@@ -79,10 +76,10 @@ public class Server {
         // forwards the request to the handler for that URL path.
         System.out.println("Creating contexts");
 
-        server.createContext("/db", new ClearApplicationHandler(db));
-        server.createContext("/user", new RegisterHandler(db));
-        server.createContext("/session", new LoginHandler(db));
-        server.createContext("/game", new GamesHandler(db));
+        server.createContext("/db", new ClearApplicationHandler());
+        server.createContext("/user", new RegisterHandler());
+        server.createContext("/session", new LoginHandler());
+        server.createContext("/game", new GamesHandler());
 
         // Create and install the "default" (or "file") HTTP handler.
         // All requests that do not match the other handler URLs

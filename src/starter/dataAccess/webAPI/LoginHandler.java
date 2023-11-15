@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import dataAccess.DAO.Database;
+import dataAccess.DAO.MemoryDatabase;
 import dataAccess.request.LoginRequest;
 import dataAccess.result.LoginResult;
 import dataAccess.result.LogoutResult;
@@ -16,11 +16,6 @@ import java.net.HttpURLConnection;
 
 public class LoginHandler implements HttpHandler {
     //FIXME memory implementation adjust when adding actual database
-    private Database db;
-
-    public LoginHandler(Database db) {
-        this.db = db;
-    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -44,7 +39,7 @@ public class LoginHandler implements HttpHandler {
                 LoginRequest request = (LoginRequest) gson.fromJson(reqData, LoginRequest.class);
 
                 LoginService service = new LoginService();
-                LoginResult result = service.login(request, db);
+                LoginResult result = service.login(request);
                 success = result.isSuccess();
 
                 //Everything worked, we send an OK response header
@@ -85,7 +80,7 @@ public class LoginHandler implements HttpHandler {
 
                     //Have the Logout service log the user out and return a response
                     LogoutService service = new LogoutService();
-                    LogoutResult result = service.logout(authToken, db);
+                    LogoutResult result = service.logout(authToken);
                     success = result.isSuccess();
 
                     //Everything works, send an OK header

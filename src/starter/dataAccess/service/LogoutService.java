@@ -1,9 +1,10 @@
 package dataAccess.service;
 
-import dataAccess.DAO.AuthTokenDAO;
-import dataAccess.DAO.Database;
+import dataAccess.DAO.*;
 import dataAccess.DataAccessException;
 import dataAccess.result.LogoutResult;
+
+import java.sql.Connection;
 
 /**Logs a user out*/
 public class LogoutService {
@@ -13,10 +14,14 @@ public class LogoutService {
      */
 
     //FIXME this is memory implementation adjust when adding the actual database
-    public LogoutResult logout(String authtoken, Database db) {
-        AuthTokenDAO aDAO = db.getAuthTokenDAO();
-        try {
+    public LogoutResult logout(String authtoken) {
+        Database db = new Database();
+        try { //Logs a user out and sends a response
+            Connection conn = db.getConnection();
+            AuthTokenDAO aDAO = new AuthTokenDAO(conn);
+
             aDAO.remove(aDAO.find(authtoken));
+            db.closeConnection(conn);
             LogoutResult res = new LogoutResult(null, true);
             return res;
         } catch (DataAccessException e) {

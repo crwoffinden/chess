@@ -88,8 +88,21 @@ public class Game {
     @Override
     public boolean equals(Object obj) {
         if (obj.getClass() != this.getClass()) return false;
-        return ((((Game)obj).gameID == this.gameID) && (((Game)obj).whiteUsername == this.whiteUsername)
-                && (((Game)obj).blackUsername == this.blackUsername) && (((Game)obj).gameName == this.gameName)
+        if (((Game)obj).whiteUsername == null) {
+            if (this.whiteUsername != null) return false;
+        }
+        else {
+            if (this.whiteUsername == null) return false;
+            if (!(((Game)obj).whiteUsername.equals(this.whiteUsername))) return false;
+        }
+        if (((Game)obj).blackUsername == null) {
+            if (this.blackUsername != null) return false;
+        }
+        else {
+            if (this.blackUsername == null) return false;
+            if (!(((Game)obj).blackUsername.equals(this.blackUsername))) return false;
+        }
+        return ((((Game)obj).gameID == this.gameID) && (((Game)obj).gameName.equals(this.gameName))
                 && (((Game)obj).game.equals(this.game)));
     }
 }

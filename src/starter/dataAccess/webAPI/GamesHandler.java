@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import dataAccess.DAO.Database;
+import dataAccess.DAO.MemoryDatabase;
 import dataAccess.request.CreateGameRequest;
 import dataAccess.request.JoinGameRequest;
 import dataAccess.result.CreateGameResult;
@@ -19,11 +19,6 @@ import java.net.HttpURLConnection;
 
 public class GamesHandler implements HttpHandler {
     //FIXME memory implementation adjust when adding actual database
-    private Database db;
-
-    public GamesHandler(Database db) {
-        this.db = db;
-    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -54,7 +49,7 @@ public class GamesHandler implements HttpHandler {
 
                     //Have the list games service kust all games in the database and return a response
                     ListGamesService service = new ListGamesService();
-                    ListGamesResult result = service.listGames(authToken, db);
+                    ListGamesResult result = service.listGames(authToken);
                     success = result.isSuccess();
 
                     //Everything works, send an OK header
@@ -105,7 +100,7 @@ public class GamesHandler implements HttpHandler {
                     CreateGameRequest request = (CreateGameRequest) gson.fromJson(reqData, CreateGameRequest.class);
 
                     CreateGameService service = new CreateGameService();
-                    CreateGameResult result = service.createGame(request, authToken, db);
+                    CreateGameResult result = service.createGame(request, authToken);
                     success = result.isSuccess();
 
                     //Everything works, send an OK header
@@ -153,7 +148,7 @@ public class GamesHandler implements HttpHandler {
                     JoinGameRequest request = (JoinGameRequest) gson.fromJson(reqData, JoinGameRequest.class);
 
                     JoinGameService service = new JoinGameService();
-                    JoinGameResult result = service.joinGame(request, authToken, db);
+                    JoinGameResult result = service.joinGame(request, authToken);
                     success = result.isSuccess();
 
                     //Everything works, send an OK header

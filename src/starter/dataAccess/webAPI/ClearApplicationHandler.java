@@ -3,7 +3,7 @@ package dataAccess.webAPI;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import dataAccess.DAO.Database;
+import dataAccess.DAO.MemoryDatabase;
 import dataAccess.result.ClearApplicationResult;
 import dataAccess.service.ClearApplicationService;
 
@@ -11,11 +11,6 @@ import java.io.*;
 import java.net.HttpURLConnection;
 
 public class ClearApplicationHandler implements HttpHandler {
-    private Database db;
-
-    public ClearApplicationHandler(Database db) {
-        this.db = db;
-    }
 
     @Override
     //FIXME memory implementation, adjust when adding the actual database
@@ -38,7 +33,7 @@ public class ClearApplicationHandler implements HttpHandler {
 
                 //Have the clear service clear the database and return the response
                 ClearApplicationService service = new ClearApplicationService();
-                ClearApplicationResult result = service.clear(db);
+                ClearApplicationResult result = service.clear();
                 success = result.isSuccess();
 
                 //Everything works, send an OK header

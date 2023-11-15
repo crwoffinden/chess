@@ -1,9 +1,6 @@
 package passoffTests.webAPITests;
 
-import dataAccess.DAO.AuthTokenDAO;
-import dataAccess.DAO.Database;
-import dataAccess.DAO.GameDAO;
-import dataAccess.DAO.UserDAO;
+import dataAccess.DAO.*;
 import dataAccess.DataAccessException;
 import dataAccess.model.Game;
 import dataAccess.request.CreateGameRequest;
@@ -20,12 +17,20 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class serviceTests {
     //FIXME memory implementation adjust after adding the actual database
-    private Database db = new Database(new UserDAO(), new GameDAO(), new AuthTokenDAO());
+    private Database db = new Database();
+
+    private Connection conn;
+
+    private UserDAO uDAO;
+
+    private GameDAO gDAO;
+
+    private AuthTokenDAO aDAO;
 
     private ClearApplicationService clearService = new ClearApplicationService();
 
@@ -54,121 +59,127 @@ public class serviceTests {
     //Add game data
 
     @BeforeEach
-    public void setup() {
-        clearService.clear(db);
+    public void setup() throws DataAccessException, SQLException {
+        conn = db.getConnection();
+        db.configureDatabase();
+        uDAO = new UserDAO(conn);
+        gDAO = new GameDAO(conn);
+        aDAO = new AuthTokenDAO(conn);
+        //Clears the database
+        clearService.clear();
     }
 
     @AfterEach
-    public void takedown() {
-        clearService.clear(db);
+    public void takedown() throws DataAccessException {
+        db.closeConnection(db.getConnection());
     }
 
     @Test
     public void clearTest() throws DataAccessException {
-        RegisterResult r = registerService.register(firstRegister, db);
+        RegisterResult r = registerService.register(firstRegister);
         String username = r.getUsername();
         String authToken = r.getAuthToken();
-        CreateGameResult g = createService.createGame(firstGame, authToken, db);
+        CreateGameResult g = createService.createGame(firstGame, authToken);
         int gameID = g.getGameID();
         assertNotNull(username);
-        assertNotNull(db.getUserDAO().find(username));
+        assertNotNull(uDAO.find(username));
         assertNotNull(gameID);
-        assertNotNull(db.getGameDAO().find(gameID));
+        assertNotNull(gDAO.find(gameID));
         assertNotNull(authToken);
-        assertNotNull(db.getAuthTokenDAO().find(authToken));
-        clearService.clear(db);
-        assertThrows(DataAccessException.class, () -> db.getUserDAO().find(username),
+        assertNotNull(aDAO.find(authToken));
+        clearService.clear();
+        assertThrows(DataAccessException.class, () -> uDAO.find(username),
                 "No user with that username.");
-        assertThrows(DataAccessException.class, () -> db.getGameDAO().find(gameID),
+        assertThrows(DataAccessException.class, () -> gDAO.find(gameID),
                 "No games with that ID.");
-        assertThrows(DataAccessException.class, () -> db.getAuthTokenDAO().find(authToken),
+        assertThrows(DataAccessException.class, () -> aDAO.find(authToken),
                 "Authtoken not found.");
     }
 
     @Test
     public void registerTestPass() throws DataAccessException {
-        RegisterResult r = registerService.register(firstRegister, db);
+        RegisterResult r = registerService.register(firstRegister);
         String username = r.getUsername();
         String authToken = r.getAuthToken();
         assertNotNull(username);
-        assertNotNull(db.getUserDAO().find(username));
+        assertNotNull(uDAO.find(username));
         assertNotNull(authToken);
-        assertNotNull(db.getAuthTokenDAO().find(authToken));
-        RegisterResult newRes = registerService.register(secondRegister, db);
+        assertNotNull(aDAO.find(authToken));
+        RegisterResult newRes = registerService.register(secondRegister);
         String otherUsername = newRes.getUsername();
         String otherAuthtoken = newRes.getAuthToken();
         assertNotNull(otherUsername);
         assertNotNull(otherAuthtoken);
-        assertNotNull(db.getUserDAO().find(otherUsername));
-        assertNotNull(db.getAuthTokenDAO().find(otherAuthtoken));
+        assertNotNull(uDAO.find(otherUsername));
+        assertNotNull(aDAO.find(otherAuthtoken));
     }
 
     @Test
     public void registerTestFail() throws DataAccessException {
-        RegisterResult r = registerService.register(firstRegister, db);
+        RegisterResult r = registerService.register(firstRegister);
         String username = r.getUsername();
         String authtoken = r.getAuthToken();
         assertNotNull(username);
-        assertNotNull(db.getUserDAO().find(username));
+        assertNotNull(uDAO.find(username));
         assertNotNull(authtoken);
-        assertNotNull(db.getAuthTokenDAO().find(authtoken));
+        assertNotNull(aDAO.find(authtoken));
         RegisterRequest badRegister = new RegisterRequest("TheifBob", "abc123",
                 "a.nother.email");
-        RegisterResult badRes = registerService.register(badRegister, db);
+        RegisterResult badRes = registerService.register(badRegister);
         assertEquals("Error: already taken", badRes.getMessage());
     }
 
     @Test
     public void loginTestPass() throws DataAccessException {
-        RegisterResult r = registerService.register(firstRegister, db);
+        RegisterResult r = registerService.register(firstRegister);
         String username = firstRegister.getUsername();
         String password = firstRegister.getPassword();
-        assertNotNull(db.getUserDAO().find(username));
-        LoginResult l = loginService.login(new LoginRequest(username, password), db);
+        assertNotNull(uDAO.find(username));
+        LoginResult l = loginService.login(new LoginRequest(username, password));
         String authtoken = l.getAuthToken();
         assertNotNull(authtoken);
-        assertNotNull(db.getAuthTokenDAO().find(authtoken));
+        assertNotNull(aDAO.find(authtoken));
     }
 
     @Test
     public void loginTestNoAccountFail() throws DataAccessException {
-        registerService.register(firstRegister, db);
-        assertNotNull(db.getUserDAO().find(firstRegister.getUsername()));
-        LoginResult l = loginService.login(new LoginRequest("NotARobot", "password"), db);
+        registerService.register(firstRegister);
+        assertNotNull(uDAO.find(firstRegister.getUsername()));
+        LoginResult l = loginService.login(new LoginRequest("NotARobot", "password"));
         assertEquals("Error: unauthorized", l.getMessage());
     }
 
     @Test
     public void loginTestWrongPasswordFail() throws DataAccessException {
-        registerService.register(firstRegister, db);
-        assertNotNull(db.getUserDAO().find(firstRegister.getUsername()));
-        LoginResult l = loginService.login(new LoginRequest(firstRegister.getUsername(), "notMyPassword"), db);
+        registerService.register(firstRegister);
+        assertNotNull(uDAO.find(firstRegister.getUsername()));
+        LoginResult l = loginService.login(new LoginRequest(firstRegister.getUsername(), "notMyPassword"));
         assertEquals("Error: unauthorized", l.getMessage());
     }
 
     @Test
     public void logoutTestPass() throws DataAccessException {
-        RegisterResult r = registerService.register(firstRegister, db);
+        RegisterResult r = registerService.register(firstRegister);
         String authtoken = r.getAuthToken();
-        assertNotNull(db.getUserDAO().find(firstRegister.getUsername()));
+        assertNotNull(uDAO.find(firstRegister.getUsername()));
         assertNotNull(authtoken);
-        assertNotNull(db.getAuthTokenDAO().find(authtoken));
-        logoutService.logout(authtoken, db);
-        assertNotNull(db.getUserDAO().find(firstRegister.getUsername()));
-        assertThrows(DataAccessException.class, () -> db.getAuthTokenDAO().find(authtoken),
+        assertNotNull(aDAO.find(authtoken));
+        logoutService.logout(authtoken);
+        assertNotNull(uDAO.find(firstRegister.getUsername()));
+        assertThrows(DataAccessException.class, () -> aDAO.find(authtoken),
                 "Authtoken not found");
     }
 
     @Test
     public void logoutTestFail() throws DataAccessException {
-        assertEquals("Error: bad request", logoutService.logout("12345", db).getMessage());
+        assertEquals("Error: bad request", logoutService.logout("12345").getMessage());
     }
 
     @Test
     public void listGamesTestPass() throws DataAccessException {
-        RegisterResult res = registerService.register(firstRegister, db);
-        CreateGameResult first = createService.createGame(firstGame, res.getAuthToken(), db);
-        CreateGameResult second = createService.createGame(secondGame, res.getAuthToken(), db);
+        RegisterResult res = registerService.register(firstRegister);
+        CreateGameResult first = createService.createGame(firstGame, res.getAuthToken());
+        CreateGameResult second = createService.createGame(secondGame, res.getAuthToken());
         assertNotNull(first);
         assertNotNull(second);
         Game gameOne = new Game(first.getGameID(), null, null, firstGame.getGameName(),
@@ -178,7 +189,7 @@ public class serviceTests {
         Game[] expectedGames = new Game[2];
         expectedGames[0] = gameOne;
         expectedGames[1] = gameTwo;
-        Game[] actualGames = listService.listGames(res.getAuthToken(), db).getGames();
+        Game[] actualGames = listService.listGames(res.getAuthToken()).getGames();
         assertEquals(expectedGames.length, actualGames.length);
         for (int i = 0; i < actualGames.length; ++i) {
             boolean containsGame = false;
@@ -191,46 +202,46 @@ public class serviceTests {
 
     @Test
     public void listGamesTestFail() {
-        RegisterResult res = registerService.register(firstRegister, db);
-        CreateGameResult first = createService.createGame(firstGame, res.getAuthToken(), db);
-        CreateGameResult second = createService.createGame(secondGame, res.getAuthToken(), db);
+        RegisterResult res = registerService.register(firstRegister);
+        CreateGameResult first = createService.createGame(firstGame, res.getAuthToken());
+        CreateGameResult second = createService.createGame(secondGame, res.getAuthToken());
         assertNotNull(first);
         assertNotNull(second);
-        logoutService.logout(res.getAuthToken(), db);
-        ListGamesResult games = listService.listGames(res.getAuthToken(), db);
+        logoutService.logout(res.getAuthToken());
+        ListGamesResult games = listService.listGames(res.getAuthToken());
         assertFalse(games.isSuccess());
         assertEquals("Error: unauthorized", games.getMessage());
     }
 
     @Test
     public void createGameTestPass() throws DataAccessException {
-        RegisterResult res = registerService.register(firstRegister, db);
-        int gameID = createService.createGame(firstGame, res.getAuthToken(), db).getGameID();
+        RegisterResult res = registerService.register(firstRegister);
+        int gameID = createService.createGame(firstGame, res.getAuthToken()).getGameID();
         assertNotNull(gameID);
-        assertNotNull(db.getGameDAO().find(gameID));
-        assertEquals(db.getGameDAO().find(gameID).getGameName(), firstGame.getGameName());
+        assertNotNull(gDAO.find(gameID));
+        assertEquals(gDAO.find(gameID).getGameName(), firstGame.getGameName());
     }
 
     @Test
     public void createGameTestFail() {
-        CreateGameResult res = createService.createGame(firstGame, "badauthtoken", db);
+        CreateGameResult res = createService.createGame(firstGame, "badauthtoken");
         assertFalse(res.isSuccess());
         assertEquals("Error: unauthorized", res.getMessage());
     }
 
     @Test
     public void joinGameTestPass() throws DataAccessException {
-        RegisterResult r = registerService.register(firstRegister, db);
-        int gameID = createService.createGame(firstGame, r.getAuthToken(), db).getGameID();
-        joinService.joinGame(new JoinGameRequest(WHITE, gameID), r.getAuthToken(), db);
-        Game thisGame = db.getGameDAO().find(gameID);
+        RegisterResult r = registerService.register(firstRegister);
+        int gameID = createService.createGame(firstGame, r.getAuthToken()).getGameID();
+        joinService.joinGame(new JoinGameRequest(WHITE, gameID), r.getAuthToken());
+        Game thisGame = gDAO.find(gameID);
         assertEquals(gameID, thisGame.getGameID());
         assertEquals(firstRegister.getUsername(), thisGame.getWhiteUsername());
         assertNull(thisGame.getBlackUsername());
         assertEquals(firstGame.getGameName(), thisGame.getGameName());
-        RegisterResult newRes = registerService.register(secondRegister, db);
-        joinService.joinGame(new JoinGameRequest(BLACK, gameID), newRes.getAuthToken(), db);
-        thisGame = db.getGameDAO().find(gameID);
+        RegisterResult newRes = registerService.register(secondRegister);
+        joinService.joinGame(new JoinGameRequest(BLACK, gameID), newRes.getAuthToken());
+        thisGame = gDAO.find(gameID);
         assertEquals(gameID, thisGame.getGameID());
         assertEquals(firstRegister.getUsername(), thisGame.getWhiteUsername());
         assertEquals(secondRegister.getUsername(), thisGame.getBlackUsername());
@@ -239,23 +250,23 @@ public class serviceTests {
 
     @Test
     public void joinGameTestBadRequestFail() {
-        RegisterResult r = registerService.register(firstRegister, db);
-        JoinGameResult j = joinService.joinGame(new JoinGameRequest(WHITE, 12345), r.getAuthToken(), db);
+        RegisterResult r = registerService.register(firstRegister);
+        JoinGameResult j = joinService.joinGame(new JoinGameRequest(WHITE, 12345), r.getAuthToken());
         assertEquals("Error: bad request", j.getMessage());
     }
 
     @Test
     public void joinGameAlreadyTakenFail() throws DataAccessException {
-        RegisterResult r = registerService.register(firstRegister, db);
-        int gameID = createService.createGame(firstGame, r.getAuthToken(), db).getGameID();
-        joinService.joinGame(new JoinGameRequest(WHITE, gameID), r.getAuthToken(), db);
-        Game thisGame = db.getGameDAO().find(gameID);
+        RegisterResult r = registerService.register(firstRegister);
+        int gameID = createService.createGame(firstGame, r.getAuthToken()).getGameID();
+        joinService.joinGame(new JoinGameRequest(WHITE, gameID), r.getAuthToken());
+        Game thisGame = gDAO.find(gameID);
         assertEquals(gameID, thisGame.getGameID());
         assertEquals(firstRegister.getUsername(), thisGame.getWhiteUsername());
         assertNull(thisGame.getBlackUsername());
         assertEquals(firstGame.getGameName(), thisGame.getGameName());
-        RegisterResult newRes = registerService.register(secondRegister, db);
-        JoinGameResult jRes = joinService.joinGame(new JoinGameRequest(WHITE, gameID), newRes.getAuthToken(), db);
+        RegisterResult newRes = registerService.register(secondRegister);
+        JoinGameResult jRes = joinService.joinGame(new JoinGameRequest(WHITE, gameID), newRes.getAuthToken());
         assertEquals("Error: already taken", jRes.getMessage());
     }
 }
