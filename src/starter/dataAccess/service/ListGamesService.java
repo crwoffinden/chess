@@ -2,11 +2,10 @@ package dataAccess.service;
 
 import dataAccess.DAO.*;
 import dataAccess.DataAccessException;
-import dataAccess.model.Game;
-import dataAccess.result.ListGamesResult;
+import model.Game;
+import result.ListGamesResult;
 
 import java.sql.Connection;
-import java.util.Map;
 
 /**Lists all of the games*/
 public class ListGamesService {

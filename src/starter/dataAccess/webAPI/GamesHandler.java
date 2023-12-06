@@ -4,12 +4,11 @@ import com.google.gson.Gson;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import dataAccess.DAO.MemoryDatabase;
-import dataAccess.request.CreateGameRequest;
-import dataAccess.request.JoinGameRequest;
-import dataAccess.result.CreateGameResult;
-import dataAccess.result.JoinGameResult;
-import dataAccess.result.ListGamesResult;
+import request.CreateGameRequest;
+import request.JoinGameRequest;
+import result.CreateGameResult;
+import result.JoinGameResult;
+import result.ListGamesResult;
 import dataAccess.service.CreateGameService;
 import dataAccess.service.JoinGameService;
 import dataAccess.service.ListGamesService;
@@ -47,7 +46,7 @@ public class GamesHandler implements HttpHandler {
                     // Display/log the request JSON data
                     System.out.println(reqData);
 
-                    //Have the list games service kust all games in the database and return a response
+                    //Have the list games service list all games in the database and return a response
                     ListGamesService service = new ListGamesService();
                     ListGamesResult result = service.listGames(authToken);
                     success = result.isSuccess();

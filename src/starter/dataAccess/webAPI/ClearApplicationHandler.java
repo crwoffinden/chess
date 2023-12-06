@@ -3,8 +3,7 @@ package dataAccess.webAPI;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import dataAccess.DAO.MemoryDatabase;
-import dataAccess.result.ClearApplicationResult;
+import result.ClearApplicationResult;
 import dataAccess.service.ClearApplicationService;
 
 import java.io.*;

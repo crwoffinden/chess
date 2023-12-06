@@ -1,4 +1,4 @@
-package dataAccess.request;
+package request;
 
 /**Request to log a user in*/
 public class LoginRequest {

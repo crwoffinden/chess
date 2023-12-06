@@ -1,8 +1,8 @@
-package dataAccess.result;
+package result;
 
-/**The result of a login request*/
-public class LoginResult {
-    /**Username of the user*/
+/**The result of a request to register a new user*/
+public class RegisterResult {
+    /**Username of the new user*/
     private String username;
 
     /**Generated authtoken*/
@@ -11,7 +11,7 @@ public class LoginResult {
     /**Error message if an error occurs*/
     private String message;
 
-    /**Whether the login succeeded or failed*/
+    /**Whether the register succeeded or failed*/
     private boolean success;
 
     /**Constructor
@@ -21,7 +21,7 @@ public class LoginResult {
      * @param message
      * @param success
      */
-    public LoginResult(String username, String authToken, String message, boolean success) {
+    public RegisterResult(String username, String authToken, String message, boolean success) {
         this.username = username;
         this.authToken = authToken;
         this.message = message;
@@ -52,7 +52,7 @@ public class LoginResult {
         return message;
     }
 
-    /**Returns whether the login request was successful or not
+    /**Returns whether the register request was successful or not
      *
      * @return
      */

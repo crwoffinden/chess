@@ -7,7 +7,7 @@ import dataAccess.AlreadyTakenException;
 import dataAccess.DAO.Database;
 import dataAccess.DAO.GameDAO;
 import dataAccess.DataAccessException;
-import dataAccess.model.Game;
+import model.Game;
 import game.Move;
 import game.Position;
 import org.junit.jupiter.api.AfterEach;

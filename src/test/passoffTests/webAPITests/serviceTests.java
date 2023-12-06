@@ -2,12 +2,11 @@ package passoffTests.webAPITests;
 
 import dataAccess.DAO.*;
 import dataAccess.DataAccessException;
-import dataAccess.model.Game;
-import dataAccess.request.CreateGameRequest;
-import dataAccess.request.JoinGameRequest;
-import dataAccess.request.LoginRequest;
-import dataAccess.request.RegisterRequest;
-import dataAccess.result.*;
+import model.Game;
+import request.CreateGameRequest;
+import request.JoinGameRequest;
+import request.LoginRequest;
+import request.RegisterRequest;
 import dataAccess.service.*;
 
 import static chess.ChessGame.TeamColor.BLACK;
@@ -16,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import result.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;

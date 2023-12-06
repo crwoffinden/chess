@@ -3,9 +3,8 @@ package dataAccess.service;
 import dataAccess.AlreadyTakenException;
 import dataAccess.DAO.*;
 import dataAccess.DataAccessException;
-import dataAccess.request.JoinGameRequest;
-import dataAccess.result.ClearApplicationResult;
-import dataAccess.result.JoinGameResult;
+import request.JoinGameRequest;
+import result.JoinGameResult;
 
 import java.sql.Connection;
 

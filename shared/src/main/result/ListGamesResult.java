@@ -1,9 +1,6 @@
-package dataAccess.result;
+package result;
 
-import dataAccess.model.Game;
-
-import java.util.List;
-import java.util.Map;
+import model.Game;
 
 /**The result of an attempt to list all of the games*/
 public class ListGamesResult {

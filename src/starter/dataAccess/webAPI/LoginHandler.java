@@ -4,10 +4,9 @@ import com.google.gson.Gson;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import dataAccess.DAO.MemoryDatabase;
-import dataAccess.request.LoginRequest;
-import dataAccess.result.LoginResult;
-import dataAccess.result.LogoutResult;
+import request.LoginRequest;
+import result.LoginResult;
+import result.LogoutResult;
 import dataAccess.service.LoginService;
 import dataAccess.service.LogoutService;
 

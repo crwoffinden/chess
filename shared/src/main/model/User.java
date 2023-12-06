@@ -1,4 +1,4 @@
-package dataAccess.model;
+package model;
 
 /**Represents a user object*/
 public class User {

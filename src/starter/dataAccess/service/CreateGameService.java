@@ -2,9 +2,9 @@ package dataAccess.service;
 
 import dataAccess.DAO.*;
 import dataAccess.DataAccessException;
-import dataAccess.model.Game;
-import dataAccess.request.CreateGameRequest;
-import dataAccess.result.CreateGameResult;
+import model.Game;
+import request.CreateGameRequest;
+import result.CreateGameResult;
 
 import java.sql.Connection;
 
@@ -15,7 +15,6 @@ public class CreateGameService {
      * @param r
      * @return
      */
-    //FIXME this is memory implementation fix when you add the actual database
     public CreateGameResult createGame(CreateGameRequest r, String authtoken) {
         Database db = new Database();
         try { //Creates a new game and sends a response
@@ -25,6 +24,7 @@ public class CreateGameService {
             aDAO.find(authtoken);
             int gameID = gDAO.getNewID();
             Game newGame = new Game(gameID, null, null, r.getGameName(), new game.Game());
+            newGame.getGame().getBoard().resetBoard();
             gDAO.insert(newGame);
             db.closeConnection(conn);
             CreateGameResult res = new CreateGameResult(gameID, null, true);

@@ -1,4 +1,4 @@
-package dataAccess.request;
+package request;
 
 /**Request to create a new game*/
 public class CreateGameRequest {

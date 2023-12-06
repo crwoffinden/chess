@@ -2,7 +2,7 @@ package dataAccess.service;
 
 import dataAccess.DAO.*;
 import dataAccess.DataAccessException;
-import dataAccess.result.LogoutResult;
+import result.LogoutResult;
 
 import java.sql.Connection;
 

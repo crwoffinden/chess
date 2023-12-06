@@ -1,11 +1,11 @@
-package dataAccess.result;
+package result;
 
-/**The result of an attempt to log a user out*/
-public class LogoutResult {
+/**The result of a request to join a game*/
+public class JoinGameResult {
     /**Error message if an error occurs*/
     private String message;
 
-    /**Whether the logout was successful or not*/
+    /**Whether the join game request was successful or not*/
     private boolean success;
 
     /**Constructor
@@ -13,7 +13,7 @@ public class LogoutResult {
      * @param message
      * @param success
      */
-    public LogoutResult(String message, boolean success) {
+    public JoinGameResult(String message, boolean success) {
         this.message = message;
         this.success = success;
     }
@@ -26,7 +26,7 @@ public class LogoutResult {
         return message;
     }
 
-    /**Returns whether the logout was successful or not
+    /**Returns whether the join game request was successful or not
      *
      * @return
      */

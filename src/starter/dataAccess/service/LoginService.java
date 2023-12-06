@@ -2,10 +2,10 @@ package dataAccess.service;
 
 import dataAccess.DAO.*;
 import dataAccess.DataAccessException;
-import dataAccess.model.AuthToken;
-import dataAccess.model.User;
-import dataAccess.request.LoginRequest;
-import dataAccess.result.LoginResult;
+import model.AuthToken;
+import model.User;
+import request.LoginRequest;
+import result.LoginResult;
 
 import java.sql.Connection;
 import java.util.UUID;

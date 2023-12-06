@@ -4,10 +4,6 @@ import java.io.*;
 import java.net.*;
 
 import com.sun.net.httpserver.*;
-import dataAccess.DAO.AuthTokenDAO;
-import dataAccess.DAO.MemoryDatabase;
-import dataAccess.DAO.GameDAO;
-import dataAccess.DAO.UserDAO;
 import dataAccess.webAPI.*;
 
 /*

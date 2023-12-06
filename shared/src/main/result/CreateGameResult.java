@@ -1,4 +1,4 @@
-package dataAccess.result;
+package result;
 
 /**The result of a create game request*/
 public class CreateGameResult {

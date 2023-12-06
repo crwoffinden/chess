@@ -1,7 +1,6 @@
-package dataAccess.request;
+package request;
 
 import chess.ChessGame;
-import dataAccess.model.User;
 
 /**Request to join a game*/
 public class JoinGameRequest {

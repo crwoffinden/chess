@@ -1,11 +1,11 @@
-package dataAccess.result;
+package result;
 
-/**The result of an attempt to clear the application of all data*/
-public class ClearApplicationResult {
-    /**The message passed after a clear request*/
+/**The result of an attempt to log a user out*/
+public class LogoutResult {
+    /**Error message if an error occurs*/
     private String message;
 
-    /**Whether the clear was successful or not*/
+    /**Whether the logout was successful or not*/
     private boolean success;
 
     /**Constructor
@@ -13,20 +13,20 @@ public class ClearApplicationResult {
      * @param message
      * @param success
      */
-    public ClearApplicationResult(String message, boolean success) {
+    public LogoutResult(String message, boolean success) {
         this.message = message;
         this.success = success;
     }
 
-    /**Gets the error message
+    /**Returns the error message
      *
      * @return
      */
     public String getMessage() {
-        return  message;
+        return message;
     }
 
-    /**Returns whether the clear was successful or not
+    /**Returns whether the logout was successful or not
      *
      * @return
      */

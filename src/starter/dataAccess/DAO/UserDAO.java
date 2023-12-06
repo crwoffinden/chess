@@ -1,7 +1,7 @@
 package dataAccess.DAO;
 
 import dataAccess.DataAccessException;
-import dataAccess.model.User;
+import model.User;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

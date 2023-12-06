@@ -1,4 +1,4 @@
-package dataAccess.request;
+package request;
 
 /**Request to register a new user*/
 public class RegisterRequest {

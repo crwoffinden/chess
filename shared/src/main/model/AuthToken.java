@@ -1,4 +1,4 @@
-package dataAccess.model;
+package model;
 
 /**Represents an authtoken object*/
 public class AuthToken {

@@ -3,17 +3,14 @@ package dataAccess.webAPI;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import dataAccess.DAO.MemoryDatabase;
-import dataAccess.request.RegisterRequest;
-import dataAccess.result.RegisterResult;
+import request.RegisterRequest;
+import result.RegisterResult;
 import dataAccess.service.RegisterService;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 
 public class RegisterHandler implements HttpHandler {
-    //FIXME memory implementation adjust when adding actual database
-
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         Gson gson = new Gson();

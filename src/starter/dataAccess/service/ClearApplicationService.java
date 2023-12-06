@@ -2,7 +2,7 @@ package dataAccess.service;
 
 import dataAccess.DAO.*;
 import dataAccess.DataAccessException;
-import dataAccess.result.ClearApplicationResult;
+import result.ClearApplicationResult;
 
 import java.sql.Connection;
 

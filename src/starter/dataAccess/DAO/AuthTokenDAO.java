@@ -1,7 +1,7 @@
 package dataAccess.DAO;
 
 import dataAccess.DataAccessException;
-import dataAccess.model.AuthToken;
+import model.AuthToken;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

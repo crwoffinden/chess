@@ -4,8 +4,6 @@ import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPosition;
 
-import javax.security.auth.login.CredentialNotFoundException;
-
 public class Board implements chess.ChessBoard {
     private ChessPiece board[][] = new ChessPiece[8][8];
 

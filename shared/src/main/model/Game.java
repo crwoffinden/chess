@@ -1,8 +1,6 @@
-package dataAccess.model;
+package model;
 
-import dataAccess.AlreadyTakenException;
-
-import java.util.Objects;
+//import dataAccess.AlreadyTakenException; TODO might be unneccessary
 
 /**Represents a game object*/
 public class Game {
@@ -54,18 +52,18 @@ public class Game {
      * @return
      */
 
-    public void setWhiteUsername(String username) throws AlreadyTakenException {
+    /*public void setWhiteUsername(String username) throws AlreadyTakenException {
         if (whiteUsername != null) throw new AlreadyTakenException("Error: already taken");
         whiteUsername = username;
-    }
+    }*/
     public String getBlackUsername(){
         return blackUsername;
     }
 
-    public void setBlackUsername(String username) throws AlreadyTakenException {
+    /*public void setBlackUsername(String username) throws AlreadyTakenException {
         if (blackUsername != null) throw new AlreadyTakenException("Error: already taken");
         blackUsername = username;
-    }
+    }*/
 
     /**Returns the game name
      *

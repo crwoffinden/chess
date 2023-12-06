@@ -3,7 +3,7 @@ package passoffTests.DAOTests;
 import dataAccess.DAO.Database;
 import dataAccess.DAO.UserDAO;
 import dataAccess.DataAccessException;
-import dataAccess.model.User;
+import model.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

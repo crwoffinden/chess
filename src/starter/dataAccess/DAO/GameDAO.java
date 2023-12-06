@@ -4,7 +4,7 @@ import chess.*;
 import com.google.gson.*;
 import dataAccess.AlreadyTakenException;
 import dataAccess.DataAccessException;
-import dataAccess.model.Game;
+import model.Game;
 
 import java.lang.reflect.Type;
 import java.sql.Connection;

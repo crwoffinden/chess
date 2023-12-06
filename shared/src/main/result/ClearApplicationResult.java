@@ -1,11 +1,11 @@
-package dataAccess.result;
+package result;
 
-/**The result of a request to join a game*/
-public class JoinGameResult {
-    /**Error message if an error occurs*/
+/**The result of an attempt to clear the application of all data*/
+public class ClearApplicationResult {
+    /**The message passed after a clear request*/
     private String message;
 
-    /**Whether the join game request was successful or not*/
+    /**Whether the clear was successful or not*/
     private boolean success;
 
     /**Constructor
@@ -13,20 +13,20 @@ public class JoinGameResult {
      * @param message
      * @param success
      */
-    public JoinGameResult(String message, boolean success) {
+    public ClearApplicationResult(String message, boolean success) {
         this.message = message;
         this.success = success;
     }
 
-    /**Returns the error message
+    /**Gets the error message
      *
      * @return
      */
     public String getMessage() {
-        return message;
+        return  message;
     }
 
-    /**Returns whether the join game request was successful or not
+    /**Returns whether the clear was successful or not
      *
      * @return
      */
