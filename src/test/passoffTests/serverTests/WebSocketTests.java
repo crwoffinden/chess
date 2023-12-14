@@ -46,22 +46,22 @@ public class WebSocketTests {
 
     @BeforeAll
     public static void init() {
-        serverFacade = new TestServerFacade("localhost", TestFactory.getServerPort());
+        serverFacade = new TestServerFacade("localhost", "8080");
         serverFacade.clear();
 
         bobClient = new TestClient();
         bobClient.setServerHost("localhost");
-        bobClient.setServerPort(TestFactory.getServerPort());
+        bobClient.setServerPort("8081");
         bobClient.setContext("/connect");
 
         jamesClient = new TestClient();
         jamesClient.setServerHost("localhost");
-        jamesClient.setServerPort(TestFactory.getServerPort());
+        jamesClient.setServerPort("8081");
         jamesClient.setContext("/connect");
 
         alfredClient = new TestClient();
         alfredClient.setServerHost("localhost");
-        alfredClient.setServerPort(TestFactory.getServerPort());
+        alfredClient.setServerPort("8081");
         alfredClient.setContext("/connect");
 
 

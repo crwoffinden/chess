@@ -8,11 +8,8 @@ public class MakeMoveUserGameCommand extends UserGameCommand {
         super(authToken);
         this.gameID = gameID;
         this.move = move;
+        commandType = CommandType.MAKE_MOVE;
     }
-
-    protected CommandType commandType = CommandType.MAKE_MOVE;
-
-    private String authToken;
 
     private Integer gameID;
 

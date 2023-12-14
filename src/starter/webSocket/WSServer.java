@@ -5,6 +5,8 @@ import com.google.gson.*;
 import dataAccess.DAO.AuthTokenDAO;
 import dataAccess.DAO.Database;
 import dataAccess.DAO.GameDAO;
+import model.AuthToken;
+import model.Game;
 import org.eclipse.jetty.websocket.api.*;
 import org.eclipse.jetty.websocket.api.annotations.*;
 import serverMessagesClasses.ErrorServerMessage;
@@ -70,7 +72,7 @@ public class WSServer {
     private Map<Integer, Boolean> gameOver = new HashMap<Integer, Boolean>();
 
     public static void main(String[] args) {
-        Spark.port(8080);
+        Spark.port(8081);
         Spark.webSocket("/connect", WSServer.class);
         Spark.get("/echo/:msg", (req, res) -> "HTTP response: " + req.params(":msg"));
         //Registers the adapters
@@ -89,154 +91,226 @@ public class WSServer {
         GameDAO gDAO = new GameDAO(conn);
         AuthTokenDAO aDAO = new AuthTokenDAO(conn);
         try {
-            System.out.printf("Received: %s", message);
             UserGameCommand command = gson.fromJson(message, UserGameCommand.class);
             UserGameCommand.CommandType type = command.getCommandType();
             String authtoken = command.getAuthString();
-            String username = aDAO.find(authtoken).getUsername();
-            switch (type) {
-                case JOIN_PLAYER:
-                    int gameID = ((JoinPlayerUserGameCommand) command).getGameID();
-                    if (!gameOver.containsKey(gameID)) gameOver.put(gameID, false);
-                    ChessGame.TeamColor color = ((JoinPlayerUserGameCommand) command).getPlayerColor();
-                    ChessGame game = gDAO.find(gameID).getGame();
-                    LoadGameServerMessage loadMessage =
-                            new LoadGameServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
-                    String json = gson.toJson(loadMessage);
-                    connections.broadcast(gameID, username, ConnectionManager.Recipients.ONLY_USER, json);
-                    String colorName;
-                    if (color == ChessGame.TeamColor.WHITE) colorName = "white";
-                    else colorName = "black";
-                    String notificationString = username + " has joined the game as " + colorName;
-                    NotificationServerMessage notification =
-                            new NotificationServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationString);
-                    json = gson.toJson(notification);
-                    connections.broadcast(gameID, username, ConnectionManager.Recipients.NOT_USER, json);
-                    break;
-                case JOIN_OBSERVER:
-                    gameID = ((JoinObserverUserGameCommand) command).getGameID();
-                    if (!gameOver.containsKey(gameID)) gameOver.put(gameID, false);
-                    game = gDAO.find(gameID).getGame();
-                    loadMessage =
-                            new LoadGameServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
-                    json = gson.toJson(loadMessage);
-                    connections.broadcast(gameID, username, ConnectionManager.Recipients.ONLY_USER, json);
-                    notificationString = username + " has joined the game as an observer";
-                    notification =
-                            new NotificationServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationString);
-                    json = gson.toJson(notification);
-                    connections.broadcast(gameID, username, ConnectionManager.Recipients.NOT_USER, json);
-                case MAKE_MOVE:
-                    gameID = ((MakeMoveUserGameCommand) command).getGameID();
-                    if (!gameOver.get(gameID)) {
-                        game = gDAO.find(gameID).getGame();
-                        ChessMove move = ((MakeMoveUserGameCommand) command).getMove();
-                        if (game.validMoves(move.getStartPosition()).contains(move)) {
-                            game.makeMove(move);
-                            gDAO.update(gameID, game);
-                            loadMessage =
-                                    new LoadGameServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
-                            json = gson.toJson(loadMessage);
-                            connections.broadcast(gameID, username, ConnectionManager.Recipients.EVERYONE, json);
-                            int startRow = move.getStartPosition().getRow();
-                            char startCol = (char) ('a' + move.getStartPosition().getColumn() - 1);
-                            int endRow = move.getEndPosition().getRow();
-                            char endCol = (char) ('a' + move.getEndPosition().getColumn() - 1);
-                            ChessPiece piece = game.getBoard().getPiece(move.getEndPosition());
-                            char pieceType;
-                            switch (piece.getPieceType()) {
-                                case PAWN -> pieceType = 'P';
-                                case ROOK -> pieceType = 'R';
-                                case KNIGHT -> pieceType = 'N';
-                                case BISHOP -> pieceType = 'B';
-                                case QUEEN -> pieceType = 'Q';
-                                case KING -> pieceType = 'K';
-                                default -> pieceType = '?';
+            AuthToken a = aDAO.find(authtoken);
+            if (a != null) {
+                String username = a.getUsername();
+                switch (type) {
+                    case JOIN_PLAYER:
+                        JoinPlayerUserGameCommand joinCommand =
+                                gson.fromJson(message, JoinPlayerUserGameCommand.class);
+                        int gameID = joinCommand.getGameID();
+                        Game g = gDAO.find(gameID);
+                        if (g != null) {
+                            webSocket.Connection newConn = new webSocket.Connection(gameID, username, session);
+                            if (!connections.connections.contains(newConn)) {
+                                connections.add(gameID, username, session);
                             }
-                            notificationString = username + " moved " + pieceType + startRow + startCol + endRow + endCol;
-                            notification =
+                            if ((joinCommand.getPlayerColor().equals(ChessGame.TeamColor.WHITE)
+                                    && g.getWhiteUsername().equals(username))
+                                    || (joinCommand.getPlayerColor().equals(ChessGame.TeamColor.BLACK)
+                                    && g.getBlackUsername().equals(username))) {
+                                if (!gameOver.containsKey(gameID)) gameOver.put(gameID, false);
+                                ChessGame.TeamColor color = joinCommand.getPlayerColor();
+                                ChessGame game = gDAO.find(gameID).getGame();
+                                LoadGameServerMessage loadMessage =
+                                        new LoadGameServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
+                                String json = gson.toJson(loadMessage);
+                                connections.broadcast(gameID, username, ConnectionManager.Recipients.ONLY_USER, json);
+                                String colorName;
+                                if (color == ChessGame.TeamColor.WHITE) colorName = "white";
+                                else colorName = "black";
+                                String notificationString = username + " has joined the game as " + colorName;
+                                NotificationServerMessage notification =
+                                        new NotificationServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationString);
+                                json = gson.toJson(notification);
+                                connections.broadcast(gameID, username, ConnectionManager.Recipients.NOT_USER, json);
+                            } else {
+                                ErrorServerMessage errorMessage =
+                                        new ErrorServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: Color already taken. Try again.");
+                                String json = gson.toJson(errorMessage);
+                                session.getRemote().sendString(json);
+                            }
+                        } else {
+                            ErrorServerMessage errorMessage =
+                                    new ErrorServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: Invalid gameID. Try again.");
+                            String json = gson.toJson(errorMessage);
+                            session.getRemote().sendString(json);
+                        }
+                        break;
+                    case JOIN_OBSERVER:
+                        JoinObserverUserGameCommand observerCommand =
+                                gson.fromJson(message, JoinObserverUserGameCommand.class);
+                        gameID = observerCommand.getGameID();
+                        g = gDAO.find(gameID);
+                        if (g != null) {
+                            webSocket.Connection newConn = new webSocket.Connection(gameID, username, session);
+                            if (!connections.connections.contains(newConn)) {
+                                connections.add(gameID, username, session);
+                            }
+                            if (!gameOver.containsKey(gameID)) gameOver.put(gameID, false);
+                            ChessGame game = g.getGame();
+                            LoadGameServerMessage loadMessage =
+                                    new LoadGameServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
+                            String json = gson.toJson(loadMessage);
+                            connections.broadcast(gameID, username, ConnectionManager.Recipients.ONLY_USER, json);
+                            String notificationString = username + " has joined the game as an observer";
+                            NotificationServerMessage notification =
                                     new NotificationServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationString);
                             json = gson.toJson(notification);
                             connections.broadcast(gameID, username, ConnectionManager.Recipients.NOT_USER, json);
-                            if (game.isInCheck(game.getTeamTurn())) {
-                                String opponentUsername;
-                                if (game.getTeamTurn() == ChessGame.TeamColor.WHITE) {
-                                    opponentUsername = gDAO.find(gameID).getWhiteUsername();
-                                } else opponentUsername = gDAO.find(gameID).getBlackUsername();
-                                notificationString = opponentUsername + " is in check.";
-                                notification =
-                                        new NotificationServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationString);
-                                json = gson.toJson(notification);
-                                connections.broadcast(gameID, username, ConnectionManager.Recipients.EVERYONE, json);
-                                if (game.isInCheckmate(game.getTeamTurn())) {
-                                    notificationString = opponentUsername + " is in checkmate. " + username + " wins!";
-                                    notification =
+                        } else {
+                            ErrorServerMessage errorMessage =
+                                    new ErrorServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: Invalid gameID. Try again.");
+                            String json = gson.toJson(errorMessage);
+                            session.getRemote().sendString(json);
+                        }
+                    case MAKE_MOVE:
+                        MakeMoveUserGameCommand moveCommand = gson.fromJson(message, MakeMoveUserGameCommand.class);
+                        gameID = ((MakeMoveUserGameCommand) command).getGameID();
+                        if (gDAO.find(gameID) != null) {
+                            if (!gameOver.get(gameID)) {
+                                ChessGame game = gDAO.find(gameID).getGame();
+                                ChessMove move = moveCommand.getMove();
+                                if (game.validMoves(move.getStartPosition()).contains(move)) {
+                                    game.makeMove(move);
+                                    gDAO.update(gameID, game);
+                                    LoadGameServerMessage loadMessage =
+                                            new LoadGameServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
+                                    String json = gson.toJson(loadMessage);
+                                    connections.broadcast(gameID, username, ConnectionManager.Recipients.EVERYONE, json);
+                                    int startRow = move.getStartPosition().getRow();
+                                    char startCol = (char) ('a' + move.getStartPosition().getColumn() - 1);
+                                    int endRow = move.getEndPosition().getRow();
+                                    char endCol = (char) ('a' + move.getEndPosition().getColumn() - 1);
+                                    ChessPiece piece = game.getBoard().getPiece(move.getEndPosition());
+                                    char pieceType;
+                                    switch (piece.getPieceType()) {
+                                        case PAWN -> pieceType = 'P';
+                                        case ROOK -> pieceType = 'R';
+                                        case KNIGHT -> pieceType = 'N';
+                                        case BISHOP -> pieceType = 'B';
+                                        case QUEEN -> pieceType = 'Q';
+                                        case KING -> pieceType = 'K';
+                                        default -> pieceType = '?';
+                                    }
+                                    String notificationString = username + " moved " + pieceType + startRow + startCol + endRow + endCol;
+                                    NotificationServerMessage notification =
                                             new NotificationServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationString);
                                     json = gson.toJson(notification);
-                                    connections.broadcast(gameID, username, ConnectionManager.Recipients.EVERYONE, json);
-                                    gameOver.remove(gameID);
-                                    gameOver.put(gameID, true);
+                                    connections.broadcast(gameID, username, ConnectionManager.Recipients.NOT_USER, json);
+                                    if (game.isInCheck(game.getTeamTurn())) {
+                                        String opponentUsername;
+                                        if (game.getTeamTurn() == ChessGame.TeamColor.WHITE) {
+                                            opponentUsername = gDAO.find(gameID).getWhiteUsername();
+                                        } else opponentUsername = gDAO.find(gameID).getBlackUsername();
+                                        notificationString = opponentUsername + " is in check.";
+                                        notification =
+                                                new NotificationServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationString);
+                                        json = gson.toJson(notification);
+                                        connections.broadcast(gameID, username, ConnectionManager.Recipients.EVERYONE, json);
+                                        if (game.isInCheckmate(game.getTeamTurn())) {
+                                            notificationString = opponentUsername + " is in checkmate. " + username + " wins!";
+                                            notification =
+                                                    new NotificationServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationString);
+                                            json = gson.toJson(notification);
+                                            connections.broadcast(gameID, username, ConnectionManager.Recipients.EVERYONE, json);
+                                            gameOver.remove(gameID);
+                                            gameOver.put(gameID, true);
+                                        }
+                                    } else if (game.isInStalemate(game.getTeamTurn())) {
+                                        notificationString = "Stalemate. It's a draw.";
+                                        notification =
+                                                new NotificationServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationString);
+                                        json = gson.toJson(notification);
+                                        connections.broadcast(gameID, username, ConnectionManager.Recipients.EVERYONE, json);
+                                        gameOver.remove(gameID);
+                                        gameOver.put(gameID, true);
+                                    }
+                                } else {
+                                    String errorString = "Error: Invalid move! Try again.";
+                                    ErrorServerMessage errorMessage =
+                                            new ErrorServerMessage(ServerMessage.ServerMessageType.ERROR, errorString);
+                                    String json = gson.toJson(errorMessage);
+                                    connections.broadcast(gameID, username, ConnectionManager.Recipients.ONLY_USER, json);
                                 }
+                            } else {
+                                String errorString = "Error: The game is over. Type \"leave\" to return to the menu.";
+                                ErrorServerMessage errorMessage =
+                                        new ErrorServerMessage(ServerMessage.ServerMessageType.ERROR, errorString);
+                                String json = gson.toJson(errorMessage);
+                                connections.broadcast(gameID, username, ConnectionManager.Recipients.ONLY_USER, json);
                             }
+                        } else {
+                            ErrorServerMessage errorMessage =
+                                    new ErrorServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: Invalid gameID. Try again.");
+                            String json = gson.toJson(errorMessage);
+                            session.getRemote().sendString(json);
+                        }
+                        break;
+                    case LEAVE:
+                        LeaveUserGameCommand leaveCommand = gson.fromJson(message, LeaveUserGameCommand.class);
+                        gameID = leaveCommand.getGameID();
+                        if (gDAO.find(gameID) != null) {
+                            connections.remove(username);
+                            if (gDAO.find(gameID).getWhiteUsername().equals(username)) {
+                                gDAO.claimSpot(gameID, ChessGame.TeamColor.WHITE, null);
+                            } else if (gDAO.find(gameID).getBlackUsername().equals(username)) {
+                                gDAO.claimSpot(gameID, ChessGame.TeamColor.BLACK, null);
+                            }
+                            String notificationString = username + "left the game.";
+                            NotificationServerMessage notification =
+                                    new NotificationServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationString);
+                            String json = gson.toJson(notification);
+                            connections.broadcast(gameID, username, ConnectionManager.Recipients.NOT_USER, json);
                         }
                         else {
-                            String errorString = "Error: Invalid move! Try again.";
                             ErrorServerMessage errorMessage =
-                                    new ErrorServerMessage(ServerMessage.ServerMessageType.ERROR, errorString);
-                            json = gson.toJson(errorMessage);
-                            connections.broadcast(gameID, username, ConnectionManager.Recipients.ONLY_USER, json);
+                                    new ErrorServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: Invalid gameID. Try again.");
+                            String json = gson.toJson(errorMessage);
+                            session.getRemote().sendString(json);
                         }
-                    }
-                    else {
-                        String errorString = "Error: The game is over. Type \"leave\" to return to the menu.";
-                        ErrorServerMessage errorMessage =
-                                new ErrorServerMessage(ServerMessage.ServerMessageType.ERROR, errorString);
-                        json = gson.toJson(errorMessage);
-                        connections.broadcast(gameID, username, ConnectionManager.Recipients.ONLY_USER, json);
-                    }
-                    break;
-                case LEAVE:
-                    gameID = ((LeaveUserGameCommand)command).getGameID();
-                    connections.remove(username);
-                    if (gDAO.find(gameID).getWhiteUsername().equals(username)) {
-                        gDAO.claimSpot(gameID, ChessGame.TeamColor.WHITE, null);
-                    }
-                    else if (gDAO.find(gameID).getBlackUsername().equals(username)) {
-                        gDAO.claimSpot(gameID, ChessGame.TeamColor.BLACK, null);
-                    }
-                    notificationString = username + "left the game.";
-                    notification =
-                            new NotificationServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationString);
-                    json = gson.toJson(notification);
-                    connections.broadcast(gameID, username, ConnectionManager.Recipients.NOT_USER, json);
-                case RESIGN:
-                    gameID = ((ResignUserGameCommand)command).getGameID();
-                    String opponentUsername = gDAO.find(gameID).getWhiteUsername();
-                    if (opponentUsername.equals(username)) opponentUsername = gDAO.find(gameID).getBlackUsername();
-                    notificationString = username + " resigned. " + opponentUsername + " wins!";
-                    notification =
-                            new NotificationServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationString);
-                    json = gson.toJson(notification);
-                    connections.broadcast(gameID, username, ConnectionManager.Recipients.NOT_USER, json);
-                    gameOver.remove(gameID);
-                    gameOver.put(gameID, true);
-                    break;
-                default: break;
+                        break;
+                    case RESIGN:
+                        ResignUserGameCommand resignCommand = gson.fromJson(message, ResignUserGameCommand.class);
+                        gameID = resignCommand.getGameID();
+                        if (gDAO.find(gameID) != null) {
+                            String opponentUsername = gDAO.find(gameID).getWhiteUsername();
+                            if (opponentUsername.equals(username))
+                                opponentUsername = gDAO.find(gameID).getBlackUsername();
+                            String notificationString = username + " resigned. " + opponentUsername + " wins!";
+                            NotificationServerMessage notification =
+                                    new NotificationServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationString);
+                            String json = gson.toJson(notification);
+                            connections.broadcast(gameID, username, ConnectionManager.Recipients.NOT_USER, json);
+                            gameOver.remove(gameID);
+                            gameOver.put(gameID, true);
+                        }
+                        else {
+                            ErrorServerMessage errorMessage =
+                                    new ErrorServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: Invalid gameID. Try again.");
+                            String json = gson.toJson(errorMessage);
+                            session.getRemote().sendString(json);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            } else {
+                ErrorServerMessage errorMessage =
+                        new ErrorServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: Bad authtoken. Try again.");
+                String json = gson.toJson(errorMessage);
+                session.getRemote().sendString(json);
             }
         } catch (Exception e) {
             ErrorServerMessage errorMessage =
                     new ErrorServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: Try again.");
             String json = gson.toJson(errorMessage);
-            Integer gameID = null;
-            String username = null;
-            for (webSocket.Connection c : connections.connections.values()) {
-                if (c.session.equals(session)) {
-                    gameID = c.gameID;
-                    username = c.username;
-                }
-            }
-            connections.broadcast(gameID, username, ConnectionManager.Recipients.ONLY_USER, json);
+            db.closeConnection(conn);
+            session.getRemote().sendString(json);
         }
-        //session.getRemote().sendString("WebSocket response: " + message); //FIXME could be basic and wrong
+        db.closeConnection(conn);
     }
 }
