@@ -68,7 +68,7 @@ public class WSClient extends Endpoint {
     private static final GsonBuilder BUILDER = new GsonBuilder();
 
     public WSClient() throws Exception {
-        URI uri = new URI("ws://localhost:8080/connect");
+        URI uri = new URI("ws://localhost:8081/connect");
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         this.session = container.connectToServer(this, uri);
 
@@ -89,21 +89,25 @@ public class WSClient extends Endpoint {
                 ServerMessage.ServerMessageType type = serverMessage.getServerMessageType();
                 switch (type) {
                     case LOAD_GAME :
-                        ChessGame game = ((LoadGameServerMessage)serverMessage).getGame();
-                        draw.draw(out, game, null, null); //FIXME adjust to get accurate colors
+                        LoadGameServerMessage loadMessage = gson.fromJson(message, LoadGameServerMessage.class);
+                        ChessGame game = loadMessage.getGame();
+                        //draws the board
+                        draw.draw(out, game, null, null);
                         break;
                     case ERROR:
-                        String errorMessage = ((ErrorServerMessage)serverMessage).getErrorMessage();
-                        out.print(errorMessage + "\n");
+                        ErrorServerMessage errorMessage = gson.fromJson(message, ErrorServerMessage.class);
+                        String errorString = errorMessage.getErrorMessage();
+                        out.print(errorString + "\n");
                         break;
                     case NOTIFICATION:
-                        String notification = ((NotificationServerMessage)serverMessage).getMessage();
+                        NotificationServerMessage notificationMessage =
+                                gson.fromJson(message, NotificationServerMessage.class);
+                        String notification = notificationMessage.getMessage();
                         out.print(notification + "\n");
                         break;
                     default:
                         break;
                 }
-                //System.out.println(message); //FIXME might need to remove
             }
         });
     }

@@ -27,11 +27,14 @@ public class ConnectionManager {
     public void broadcast(int gameID, String root, Recipients type , String message) throws IOException {
         var removeList = new ArrayList<Connection>();
         for (var c : connections.values()) {
+            //Ensures only people watching the same game get the messages
             if (c.gameID == gameID && c.session.isOpen()) {
                 if (c.username.equals(root)) {
+                    //Will send to root user unless it specifically says not to
                     if (type != Recipients.NOT_USER) c.send(message);
                 }
                 else {
+                    //Will send to other users unless it specifically sends only to the root user
                     if (type != Recipients.ONLY_USER) c.send(message);
                 }
             } else if (!c.session.isOpen()){

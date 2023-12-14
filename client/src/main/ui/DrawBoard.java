@@ -11,6 +11,7 @@ import java.util.Set;
 import static ui.EscapeSequences.*;
 
 public class DrawBoard {
+    //UI class that draws the board
     private static final int BOARD_SIZE_IN_SQUARES = 8;
 
     public static void draw(PrintStream out, ChessGame game, ChessGame.TeamColor color, Set<ChessPosition> highlightSquares) {

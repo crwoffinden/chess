@@ -291,48 +291,54 @@ public class ClientMain {
         }
     }
 
+    //For players
     public static void playGame(PrintStream out, Game game, String authToken, ChessGame.TeamColor color) throws Exception {
         ChessGame yourGame = game.getGame();
+        //Sets up the webSocket Client
         WSClient rootClient = new WSClient();
         UserGameCommand joinCommand = new JoinPlayerUserGameCommand(authToken, game.getGameID(), color);
         Gson gson = BUILDER.create();
         String json = gson.toJson(joinCommand);
         rootClient.send(json);
         DrawBoard draw = new DrawBoard();
-        //drawBoard(out, yourGame, color, null); //FIXME let webSocket do its job
         out.print(SET_BG_COLOR_DARK_GREEN);
         out.print(SET_TEXT_COLOR_WHITE);
         out.print("\n");
         out.print("You are now playing " + game.getGameName() + ". Type \"help\" to see commands.");
-        boolean turn = (color.equals(ChessGame.TeamColor.WHITE)); //FIXME may be scrapped
-
-        while (yourGame.getTeamTurn() != color) {
-            int count = 1;//FIXME or some other dud code
-        }
         out.print("Your turn! What would you like to do?");
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNext()) {
+            //Ensures the game board being used is current
+            Game[] gameList = new Game[0];
+            String responseJSON = SERVER.getRequest("http://localhost:8080/game", authToken);
+            ListGamesResult listRes = gson.fromJson(responseJSON, ListGamesResult.class);
+            if (listRes.isSuccess()) {
+                gameList = listRes.getGames();
+            }
+            int i = 0;
+            while (i < gameList.length && gameList[i].getGameID() != game.getGameID()) ++i;
+            if (i < gameList.length) yourGame = gameList[i].getGame();
             String arg = scanner.next();
+            //menu
             switch (arg.toLowerCase()) {
                 case ("help") :
                     out.print(IN_GAME_HELP_SCREEN);
                     break;
                 case ("redraw") :
                     draw.draw(out, yourGame, color, null);
+                    break;
                 case ("leave") :
                     LeaveUserGameCommand leaveCommand = new LeaveUserGameCommand(authToken, game.getGameID());
                     json = gson.toJson(leaveCommand);
                     rootClient.send(json);
                     return;
                 case ("resign") :
-                    //FIXME let websocket do its job
-                    //out.print("You forfeit the game. You lost. Good game! Type \"leave\" to return to menu.\n");
                     ResignUserGameCommand resignCommand = new ResignUserGameCommand(authToken, game.getGameID());
                     json = gson.toJson(resignCommand);
-                    rootClient.send(json); //FIXME does this need to be moved to serverFacade?
+                    rootClient.send(json);
+                    break;
                 case ("move") :
-                    if (yourGame.getTeamTurn().equals(color)) {
-                        out.print("Start square (letter, number, no spaces): ");
+                    out.print("Start square (letter, number, no spaces): ");
                         arg = scanner.next();
                         if (arg.length() == 2 && arg.toLowerCase().charAt(0) >= 'a' && arg.toLowerCase().charAt(0) <= 'h'
                                 && arg.charAt(1) >= '1' && arg.charAt(1) <= '8') {
@@ -340,6 +346,7 @@ public class ClientMain {
                             int row = (int) (arg.charAt(1) - '1' + 1);
                             ChessPosition startPos = new Position(row, col);
                             ChessPiece piece = yourGame.getBoard().getPiece(startPos);
+                            //Ensures valid input
                             if (piece != null && piece.getTeamColor().equals(color)) {
                                 out.print("End square (letter, number, no spaces): ");
                                 arg = scanner.next();
@@ -353,18 +360,9 @@ public class ClientMain {
                                             new MakeMoveUserGameCommand(authToken, game.getGameID(), proposedMove);
                                     json = gson.toJson(moveCommand);
                                     rootClient.send(json);
-                                /*try {
-                                    yourGame.makeMove(proposedMove);
-                                    drawBoard(out, yourGame, color, null);
-                                    turn = false;
-                                } catch (InvalidMoveException e) {
-                                    out.print(e.getMessage() + " Try again.\n");
-                                }*/ //FIXME let webSocket do it's job
                                 } else out.print("Invalid input, try again\n");
                             } else out.print("Choose a square with one of your pieces on it. Try again.\n");
                         } else out.print("Invalid input, try again.\n");
-                    }
-                    else out.print("It's not your turn. Wait for your opponent to move.\n");
                     break;
                 case ("highlight") :
                     out.print("Start square (letter, number, no spaces): ");
@@ -395,19 +393,19 @@ public class ClientMain {
                     break;
                 default: out.print("I didn't understand that. Try again.\n");
             }
-            //while(!turn); //FIXME figure out, may be scrapped
         }
     }
 
+    //For observers
     public static void observeGame(PrintStream out, Game game, String authToken) throws Exception {
         ChessGame yourGame = game.getGame();
+        //Sets up webSocket Client
         WSClient rootClient = new WSClient();
         UserGameCommand observeCommand = new JoinObserverUserGameCommand(authToken, game.getGameID());
         Gson gson = BUILDER.create();
         String json = gson.toJson(observeCommand);
         rootClient.send(json);
         DrawBoard draw = new DrawBoard();
-        //drawBoard(out, yourGame, color, null); //FIXME let webSocket do its job
         out.print(SET_BG_COLOR_DARK_GREEN);
         out.print(SET_TEXT_COLOR_WHITE);
         out.print("\n");
@@ -415,8 +413,19 @@ public class ClientMain {
 
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNext()) {
+            //Ensures the game being observed is current
+            Game[] gameList = new Game[0];
+            String responseJSON = SERVER.getRequest("http://localhost:8080/game", authToken);
+            ListGamesResult listRes = gson.fromJson(responseJSON, ListGamesResult.class);
+            if (listRes.isSuccess()) {
+                gameList = listRes.getGames();
+            }
+            int i = 0;
+            while (i < gameList.length && gameList[i].getGameID() != game.getGameID()) ++i;
+            if (i < gameList.length) yourGame = gameList[i].getGame();
             String arg = scanner.next();
             switch (arg.toLowerCase()) {
+                //menu
                 case ("help") :
                     out.print(OBSERVING_GAME_HELP_SCREEN);
                     break;
@@ -431,208 +440,5 @@ public class ClientMain {
             }
             out.print("What would you like to do?");
         }
-    }
-
-    //Draws the board on the UI
-    public static void drawBoard(PrintStream out, ChessGame game, ChessGame.TeamColor color, Set<ChessPosition> highlightSquares) {
-        //keeps track of the color of the squares
-        // (since the bottom left corner is always black, the top left corner is always white)
-        boolean white = true;
-        //prints the column letters
-        out.print(SET_BG_COLOR_DARK_GREEN);
-        out.print(SET_TEXT_COLOR_BLACK);
-        out.print("   ");
-        //orientation depends on the point of view
-        if (color == ChessGame.TeamColor.WHITE) {
-            for (int col = 1; col <= BOARD_SIZE_IN_SQUARES; ++col) {
-                char colName = (char) ('a' + col - 1);
-                out.print(" " + colName + " ");
-            }
-        }
-        else {
-            for (int col = 8; col > 0; --col) {
-                char colName = (char) ('a' + col - 1);
-                out.print(" " + colName + " ");
-            }
-        }
-        out.print("   ");
-        out.print("\n");
-        //Orientation depends on the point of view
-        if (color == ChessGame.TeamColor.WHITE) {
-            for (int row = 8; row > 0; --row) {
-                out.print(SET_BG_COLOR_DARK_GREEN);
-                //Prints row number
-                out.print(" " + row + " ");
-                for (int col = 1; col <= BOARD_SIZE_IN_SQUARES; ++col) {
-                    //prints the correct colored square
-                    ChessPosition square = new Position(row, col);
-                    if (highlightSquares != null && highlightSquares.contains(square)) out.print(SET_BG_COLOR_YELLOW);
-                    else if (white) out.print(SET_BG_COLOR_LIGHT_GREY);
-                    else out.print(SET_BG_COLOR_DARK_GREY);
-                    //Finds the piece on that spot and prints accordingly
-                    ChessPiece piece = game.getBoard().getPiece(square);
-                    if (piece == null) out.print("   ");
-                    //Uses letters because for some reason, unicode black pawns are wider than the other unicode pieces
-                    //White pieces
-                    else if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-                        out.print(SET_TEXT_COLOR_WHITE);
-                        switch (piece.getPieceType()) {
-                            case PAWN:
-                                out.print(" P ");
-                                break;
-                            case ROOK:
-                                out.print(" R ");
-                                break;
-                            case KNIGHT:
-                                out.print(" N ");
-                                break;
-                            case BISHOP:
-                                out.print(" B ");
-                                break;
-                            case QUEEN:
-                                out.print(" Q ");
-                                break;
-                            case KING:
-                                out.print(" K ");
-                                break;
-                            default: out.print("   ");
-                        }
-                    }
-                    //Black Pieces
-                    else if(piece.getTeamColor() == ChessGame.TeamColor.BLACK) {
-                        out.print(SET_TEXT_COLOR_BLACK);
-                        switch (piece.getPieceType()) {
-                            case PAWN:
-                                out.print(" P ");
-                                break;
-                            case ROOK:
-                                out.print(" R ");
-                                break;
-                            case KNIGHT:
-                                out.print(" N ");
-                                break;
-                            case BISHOP:
-                                out.print(" B ");
-                                break;
-                            case QUEEN:
-                                out.print(" Q ");
-                                break;
-                            case KING:
-                                out.print(" K ");
-                                break;
-                            default: out.print("   ");
-                        }
-                    }
-                    //Alternates the color of the next square
-                    white = (!white);
-                }
-                out.print(SET_BG_COLOR_DARK_GREEN);
-                out.print(SET_TEXT_COLOR_BLACK);
-                //Prints the row number
-                out.print(" " + row + " ");
-                //Alternates the color of the first square on the next row
-                white = (!white);
-                out.print("\n");
-            }
-        }
-        if (color == ChessGame.TeamColor.BLACK) {
-            for (int row = 1; row <= BOARD_SIZE_IN_SQUARES; ++row) {
-                out.print(SET_BG_COLOR_DARK_GREEN);
-                //Prints the row number
-                out.print(" " + row + " ");
-                for (int col = 8; col > 0; --col) {
-                    //Ensures the right square color
-                    ChessPosition square = new Position(row, col);
-                    if (highlightSquares != null && highlightSquares.contains(square)) out.print(SET_BG_COLOR_YELLOW);
-                    else if (white) out.print(SET_BG_COLOR_LIGHT_GREY);
-                    else out.print(SET_BG_COLOR_DARK_GREY);
-                    //Finds the piece and prints accordingly
-                    ChessPiece piece = game.getBoard().getPiece(square);
-                    if (piece == null) out.print("   ");
-                    //White pieces
-                    else if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-                        out.print(SET_TEXT_COLOR_WHITE);
-                        switch (piece.getPieceType()) {
-                            case PAWN:
-                                out.print(" P ");
-                                break;
-                            case ROOK:
-                                out.print(" R ");
-                                break;
-                            case KNIGHT:
-                                out.print(" N ");
-                                break;
-                            case BISHOP:
-                                out.print(" B ");
-                                break;
-                            case QUEEN:
-                                out.print(" Q ");
-                                break;
-                            case KING:
-                                out.print(" K ");
-                                break;
-                            default:
-                                out.print("   ");
-                        }
-                    }
-                    //Black pieces
-                    else if (piece.getTeamColor() == ChessGame.TeamColor.BLACK) {
-                        out.print(SET_TEXT_COLOR_BLACK);
-                        switch (piece.getPieceType()) {
-                            case PAWN:
-                                out.print(" P ");
-                                break;
-                            case ROOK:
-                                out.print(" R ");
-                                break;
-                            case KNIGHT:
-                                out.print(" N ");
-                                break;
-                            case BISHOP:
-                                out.print(" B ");
-                                break;
-                            case QUEEN:
-                                out.print(" Q ");
-                                break;
-                            case KING:
-                                out.print(" K ");
-                                break;
-                            default:
-                                out.print("  ");
-                        }
-                    }
-                    //Alternates the color of the next square
-                    white = (!white);
-                }
-                out.print(SET_BG_COLOR_DARK_GREEN);
-                out.print(SET_TEXT_COLOR_BLACK);
-                //Prints the row number
-                out.print(" " + row + " ");
-                //Alternates the color of the first square of the next row
-                white = (!white);
-                out.print("\n");
-            }
-        }
-        out.print(SET_BG_COLOR_DARK_GREEN);
-        out.print(SET_TEXT_COLOR_BLACK);
-        out.print("   ");
-        //Prints the column letters
-        //Orientation depends on point of view
-        if (color == ChessGame.TeamColor.WHITE) {
-            for (int col = 1; col <= BOARD_SIZE_IN_SQUARES; ++col) {
-                char colName = (char) ('a' + col - 1);
-                out.print(" " + colName + " ");
-            }
-        }
-        else {
-            for (int col = 8; col > 0; --col) {
-                char colName = (char) ('a' + col - 1);
-                out.print(" " + colName + " ");
-            }
-        }
-        out.print("   ");
-        out.print("\n");
-        out.print(SET_BG_COLOR_BLACK);
-        out.print(SET_TEXT_COLOR_WHITE);
     }
 }

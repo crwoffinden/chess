@@ -46,6 +46,8 @@ public class WebSocketTests {
 
     @BeforeAll
     public static void init() {
+        //Because my server class did not use spark, spark has to connect on a separate connection.
+        // This is the only part of the test I modified, and I did so with Professor Jensen's approval.
         serverFacade = new TestServerFacade("localhost", "8080");
         serverFacade.clear();
 
